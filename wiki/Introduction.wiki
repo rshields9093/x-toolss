@@ -1,0 +1,23 @@
+#summary Introduction to X-TOOLSS
+
+= Introduction =
+
+X-TOOLSS is an optimization software using genetic and evolutionary computations (GECs) to solve complex problems.  This wiki serves as an intoduction to X-TOOLS and how to use it.
+
+
+= Optimization Problems =
+
+Coming soon.
+
+= The X-TOOLS Software Package =
+
+Coming soon.
+
+= Creating a Fitness Function =
+
+Coming soon.
+
+= Optimizing a Problem =
+
+Coming soon.
+
