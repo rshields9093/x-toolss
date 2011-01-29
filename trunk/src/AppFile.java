@@ -189,7 +189,18 @@
 	         //EXECUTE CODE FILE
 			try {
 				if(theMod.getCodeFileType().equalsIgnoreCase("java")) {
-					Runtime.getRuntime().exec("java -classpath .;\"" + System.getenv("CLASSPATH") + "\" " + theMod.getCodeFile(), null, new File(directory)).waitFor();
+					String strCmd;
+					if(System.getenv("CLASSPATH")!=null)
+					{
+						//Works on all tested Windows systems.
+						strCmd ="java -classpath .;\"" + System.getenv("CLASSPATH") + "\" " + theMod.getCodeFile();
+					}
+					else
+					{
+						//Works on Mac OS 10.6 and Linux (Fedora 14 64-bit)
+						strCmd = "java "+theMod.getCodeFile();
+					}
+					Runtime.getRuntime().exec(strCmd, null, new File(directory)).waitFor();
 				}
 				else if(theMod.getCodeFileType().equalsIgnoreCase("matlab")) {
 					ProcessBuilder pb = new ProcessBuilder(directory + File.separator + "matlab -nodisplay < " + theMod.getCodeFile());
