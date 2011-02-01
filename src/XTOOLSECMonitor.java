@@ -61,6 +61,15 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 	public ECResult getResults(Population population, Individual[] parents, Individual[] children) {
 		Individual best = population.getIndividual(0);
 		double avgFit = 0.0;
+		
+		/*
+		 * This section of code calculate the following:
+		 *   smallestFit
+		 *   avgFit
+		 *   ...
+		 */
+		
+		
 		if(best instanceof Particle) {
 			double smallestFit = Double.POSITIVE_INFINITY;
 			if(children != null) {
@@ -113,9 +122,18 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 			}	
 			ecResult.numFEBest = population.getNumFunctionEvaluations();	
 		}
+		
+		/*
+		 * Calc avgFit, numFunEvals and lastPopFunEvals
+		 */
 		avgFit /= (double)population.getSize();
 		numFunEvals += (population.getNumFunctionEvaluations() - lastPopFunEvals);
 		lastPopFunEvals = population.getNumFunctionEvaluations();
+		
+		
+		/*
+		 * Write to files (should only take place if log interval is same as numFunEvals)
+		 */
 		if(logfile != null) {
 			if(best instanceof Particle) {
 				if(children != null) {
@@ -195,48 +213,47 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 				outfile.flush();				
 			}
 		}
-		if(frame != null && (numFunEvals >= logInterval || population.getNumFunctionEvaluations() >= maxFunEvals)) {
+		
+		String tempString = "";
+		double bestFit = 0.0;
+		String bestFitStr = "";
+		if((frame != null && population.getNumFunctionEvaluations() >= population.getSize())||(population.getNumFunctionEvaluations() >= maxFunEvals)) {
 			if(best instanceof Particle) {
 				if(children != null) {
-					frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + ((Particle)best).getPFitness() + " : " + ((Particle)best).getP() + "\n");
-					String tempString = "";
+					bestFitStr = ((Particle)best).getPFitness() + " : " + ((Particle)best).getP();
 					tempString += "Evaluations: " + population.getNumFunctionEvaluations() + "      Total: " + maxFunEvals + "\n";
 					tempString += "Best: " + ((Particle)best).getP() + " fit: " + ((Particle)best).getPFitness() + "\n";
 					tempString += "Average Fitness: " + avgFit + "\n";
 					for(int i = 0; i < population.getSize(); i++) {
 						tempString += "Ind " + (i + 1) + ": " + ((Particle)population.getIndividual(i)).getP() + " fit: " + ((Particle)population.getIndividual(i)).getPFitness() + "\n";
 					}
-					frame.setCurrentPopulationInfo(tempString);
-					frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
-					frame.addPoint(new Point2D.Double(population.getNumGenerations(), ((Particle)best).getPFitness()), Color.red);
+					bestFit = ((Particle)best).getPFitness();
 				}
 				else {
-					frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + ((Particle)best).getFitness() + " : " + ((Particle)best).getChromosome() + "\n");
-					String tempString = "";
+					bestFitStr = ((Particle)best).getFitness() + " : " + ((Particle)best).getChromosome();
 					tempString += "Evaluations: " + population.getNumFunctionEvaluations() + "      Total: " + maxFunEvals + "\n";
 					tempString += "Best: " + ((Particle)best).getChromosome() + " fit: " + ((Particle)best).getFitness() + "\n";
 					tempString += "Average Fitness: " + avgFit + "\n";
 					for(int i = 0; i < population.getSize(); i++) {
 						tempString += "Ind " + (i + 1) + ": " + ((Particle)population.getIndividual(i)).getChromosome() + " fit: " + ((Particle)population.getIndividual(i)).getFitness() + "\n";
 					}
-					frame.setCurrentPopulationInfo(tempString);
-					frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
-					frame.addPoint(new Point2D.Double(population.getNumGenerations(), ((Particle)best).getFitness()), Color.red);
+					bestFit = ((Particle)best).getFitness();
 				}
 			}
 			else {
-				frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + best.getPrintableFitness() + " : " + best.getChromosome() + "\n");
-				String tempString = "";
+				bestFitStr = best.getPrintableFitness() + " : " + best.getChromosome();
 				tempString += "Evaluations: " + population.getNumFunctionEvaluations() + "      Total: " + maxFunEvals + "\n";
 				tempString += "Best: " + best.getChromosome() + " fit: " + best.getPrintableFitness() + "\n";
 				tempString += "Average Fitness: " + avgFit + "\n";
 				for(int i = 0; i < population.getSize(); i++) {
 					tempString += "Ind " + (i + 1) + ": " + population.getIndividual(i).getChromosome() + " fit: " + population.getIndividual(i).getPrintableFitness() + "\n";
 				}
-				frame.setCurrentPopulationInfo(tempString);
-				frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
-				frame.addPoint(new Point2D.Double(population.getNumGenerations(), best.getFitness()), Color.red);
+				bestFit = best.getFitness();
 			}
+			frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + bestFitStr + "\n");
+			frame.setCurrentPopulationInfo(tempString);
+			frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
+			frame.addPoint(new Point2D.Double(population.getNumGenerations(), bestFit), Color.red);
 		}
 		if(numFunEvals >= logInterval) {
 			numFunEvals = 0;
