@@ -26,6 +26,7 @@
    //
    // MODULE OBJECT
    //
+   //  This class reads the input file (.xts).
    //**********************************************************************
     class Module2
    {

@@ -84,10 +84,12 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
     //**********************************************************************
       
       //THESE NEED TO BE MODIFIED TO IMPLEMEMENT GA  
-      String[] nameOfGA = {"Generational GA with BLX", "Steady-state GA", "Steady-state GA with BLX", "Steady-generational GA with BLX", "PSO", "Generational DEA", "Steady-state DEA", "Elitist EDA", "Standard EP", "Continuous Standard EP", "Meta-EP", "Continuous Meta-EP"};
+      String[] nameOfGA = {"Generational GA with BLX", "Steady-state GA", "Steady-state GA with BLX", 
+    		  "Steady-generational GA with BLX", "PSO", "Generational DEA", "Steady-state DEA", 
+    		  "Elitist EDA", "Standard EP", "Continuous Standard EP", "Meta-EP", "Continuous Meta-EP"};
       Integer popSize, numEval, numElites, tournSize, neighborhoodSize, constCoeff, numRuns, logInterval;
       Float crossoverUsageRate, blxAlpha, mutUsageRate, mutRate, mutRange, phi;
-      String logResults;
+      String logFileName;
 	  String memespaceIP;
 	  Integer memespacePort;
 	  Float migrationRate;
@@ -225,7 +227,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          mutRange = new Float(0.2);
 		 useOneFifthRule = "NO";
          phi = new Float(0.2);
-         logResults = "NO";
+         logFileName = "xtoolss";
          logInterval = new Integer(1);
 		 memespaceIP = "NONE";
 		 memespacePort = new Integer(-1);
@@ -1744,10 +1746,10 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          String gaName = (String)gaSelect.getSelectedItem();
          XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
          MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numEval.intValue(), tt);
-         boolean shouldLog = !logResults.equalsIgnoreCase("NO");
-		 String logFilename = (shouldLog)? logResults + ".log" : null;
-         String outFilename = (shouldLog)? logResults + ".out" : "xtoolss.out";
-         String statFilename = (shouldLog)? logResults + ".stat" : "xtoolss.stat";
+         boolean shouldLog = !logFileName.equalsIgnoreCase("");
+		 String logFilename = (shouldLog)? logFileName + ".log" : "xtoolss.log";
+         String outFilename = (shouldLog)? logFileName + ".out" : "xtoolss.out";
+         String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
          XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
@@ -1882,7 +1884,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 7) {
                logInterval = new Integer((int)value);
@@ -1896,16 +1898,16 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 10) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:     "+popSize);
+            gaVars.add(" Mutation Rate:       "+mutRate);
+            gaVars.add(" Mutation Range:      "+mutRange);
+            gaVars.add(" Total Evaluations:   "+numEval);
+            gaVars.add(" Number of Runs:      "+numRuns);
+            gaVars.add(" Log File Name:       "+logFileName);
+            gaVars.add(" Log Interval:        "+logInterval);
+            gaVars.add(" Memespace IP:        "+memespaceIP);
+            gaVars.add(" Memespace Port:      "+memespacePort);
+            gaVars.add(" Migration Rate:      "+migrationRate);
          }
          else if(gaName.equals("Continuous Standard EP")) {
             if(selIndex == 1){
@@ -1924,7 +1926,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 7) {
                logInterval = new Integer((int)value);
@@ -1938,16 +1940,16 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 10) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:    "+popSize);
+            gaVars.add(" Mutation Rate:      "+mutRate);
+            gaVars.add(" Mutation Range:     "+mutRange);
+            gaVars.add(" Total Evaluations:  "+numEval);
+            gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Log File Name:      "+logFileName);
+            gaVars.add(" Log Interval:       "+logInterval);
+            gaVars.add(" Memespace IP:       "+memespaceIP);
+            gaVars.add(" Memespace Port:     "+memespacePort);
+            gaVars.add(" Migration Rate:     "+migrationRate);
          }
          else if(gaName.equals("Meta-EP")) {
             if(selIndex == 1){
@@ -1963,7 +1965,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 6) {
                logInterval = new Integer((int)value);
@@ -1977,15 +1979,15 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 9) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Eta Mutation Rate:            "+mutRate);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Eta Mutation Rate:    "+mutRate);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
          }
          else if(gaName.equals("Continuous Meta-EP")) {
             if(selIndex == 1){
@@ -2001,7 +2003,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 6) {
                logInterval = new Integer((int)value);
@@ -2015,15 +2017,15 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 9) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Eta Mutation Rate:            "+mutRate);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Eta Mutation Rate:    "+mutRate);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
          }
          else if(gaName.equals("Steady-state GA with BLX")) {
             if(selIndex == 1){
@@ -2051,7 +2053,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 10) {
                logInterval = new Integer((int)value);
@@ -2068,20 +2070,20 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 14) {
                useOneFifthRule = text.toUpperCase();
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Crossover Usage Rate: "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:            "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:  "+useOneFifthRule);
          }
          else if(gaName.equals("Generational GA with BLX")) {
             if(selIndex == 1){
@@ -2112,7 +2114,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 10) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 11) {
                logInterval = new Integer((int)value);
@@ -2129,21 +2131,21 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 15) {
                useOneFifthRule = text.toUpperCase();
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:       "+popSize);
+            gaVars.add(" Number of Elites:      "+numElites);
+            gaVars.add(" Crossover Usage Rate:  "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:             "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:   "+mutUsageRate);
+            gaVars.add(" Mutation Rate:         "+mutRate);
+            gaVars.add(" Mutation Range:        "+mutRange);
+            gaVars.add(" Total Evaluations:     "+numEval);
+            gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Log File Name:         "+logFileName);
+            gaVars.add(" Log Interval:          "+logInterval);
+            gaVars.add(" Memespace IP:          "+memespaceIP);
+            gaVars.add(" Memespace Port:        "+memespacePort);
+            gaVars.add(" Migration Rate:        "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:   "+useOneFifthRule);
          }
          else if(gaName.equals("Steady-generational GA with BLX")) {
             if(selIndex == 1){
@@ -2171,7 +2173,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 10) {
                logInterval = new Integer((int)value);
@@ -2188,20 +2190,20 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 14) {
                useOneFifthRule = text.toUpperCase();
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:       "+popSize);
+            gaVars.add(" Crossover Usage Rate:  "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:             "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:   "+mutUsageRate);
+            gaVars.add(" Mutation Rate:         "+mutRate);
+            gaVars.add(" Mutation Range:        "+mutRange);
+            gaVars.add(" Total Evaluations:     "+numEval);
+            gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Log File Name:         "+logFileName);
+            gaVars.add(" Log Interval:          "+logInterval);
+            gaVars.add(" Memespace IP:          "+memespaceIP);
+            gaVars.add(" Memespace Port:        "+memespacePort);
+            gaVars.add(" Migration Rate:        "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:   "+useOneFifthRule);
          }
          else if(gaName.equals("Steady-state GA")) {
             if(selIndex == 1){
@@ -2226,7 +2228,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 9) {
                logInterval = new Integer((int)value);
@@ -2243,19 +2245,19 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 13) {
                useOneFifthRule = text.toUpperCase();
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:        "+popSize);
+            gaVars.add(" Crossover Usage Rate:   "+crossoverUsageRate);
+            gaVars.add(" Mutation Usage Rate:    "+mutUsageRate);
+            gaVars.add(" Mutation Rate:          "+mutRate);
+            gaVars.add(" Mutation Range:         "+mutRange);
+            gaVars.add(" Total Evaluations:      "+numEval);
+            gaVars.add(" Number of Runs:         "+numRuns);
+            gaVars.add(" Log File Name:          "+logFileName);
+            gaVars.add(" Log Interval:           "+logInterval);
+            gaVars.add(" Memespace IP:           "+memespaceIP);
+            gaVars.add(" Memespace Port:         "+memespacePort);
+            gaVars.add(" Migration Rate:         "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:    "+useOneFifthRule);
          }
          else if(gaName.equals("PSO")) {
             if(selIndex == 1){
@@ -2274,7 +2276,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 7) {
                logInterval = new Integer((int)value);
@@ -2293,7 +2295,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             gaVars.add(" Constriction Coefficient?:    "+constCoeff);
             gaVars.add(" Total Evaluations:            "+numEval);
             gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
+            gaVars.add(" Log File Name:                "+logFileName);
             gaVars.add(" Log Interval:                 "+logInterval);
             gaVars.add(" Memespace IP:                 "+memespaceIP);
             gaVars.add(" Memespace Port:               "+memespacePort);
@@ -2325,7 +2327,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 10) {
                logInterval = new Integer((int)value);
@@ -2339,19 +2341,19 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 13) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Phi:                          "+phi);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:       "+popSize);
+            gaVars.add(" Number of Elites:      "+numElites);
+            gaVars.add(" Phi:                   "+phi);
+            gaVars.add(" Mutation Usage Rate:   "+mutUsageRate);
+            gaVars.add(" Mutation Rate:         "+mutRate);
+            gaVars.add(" Mutation Range:        "+mutRange);
+            gaVars.add(" Total Evaluations:     "+numEval);
+            gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Log File Name:         "+logFileName);
+            gaVars.add(" Log Interval:          "+logInterval);
+            gaVars.add(" Memespace IP:          "+memespaceIP);
+            gaVars.add(" Memespace Port:        "+memespacePort);
+            gaVars.add(" Migration Rate:        "+migrationRate);
          }
          else if(gaName.equals("Steady-state DEA")) {
             if(selIndex == 1){
@@ -2376,7 +2378,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               logResults = text;
+               logFileName = text;
             }
             else if(selIndex == 9) {
                logInterval = new Integer((int)value);
@@ -2390,18 +2392,18 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 12) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Phi:                          "+phi);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:       "+popSize);
+            gaVars.add(" Phi:                   "+phi);
+            gaVars.add(" Mutation Usage Rate:   "+mutUsageRate);
+            gaVars.add(" Mutation Rate:         "+mutRate);
+            gaVars.add(" Mutation Range:        "+mutRange);
+            gaVars.add(" Total Evaluations:     "+numEval);
+            gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Log File Name:         "+logFileName);
+            gaVars.add(" Log Interval:          "+logInterval);
+            gaVars.add(" Memespace IP:          "+memespaceIP);
+            gaVars.add(" Memespace Port:        "+memespacePort);
+            gaVars.add(" Migration Rate:        "+migrationRate);
          }
          else if(gaName.equals("Elitist EDA")) {
             if(selIndex == 1){
@@ -2417,7 +2419,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logResults = text.toUpperCase();
+               logFileName = text.toUpperCase();
             }
             else if(selIndex == 6) {
                logInterval = new Integer((int)value);
@@ -2431,15 +2433,15 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else if(selIndex == 9) {
                migrationRate = value;
             }
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:     "+popSize);
+            gaVars.add(" Number of Elites:    "+numElites);
+            gaVars.add(" Total Evaluations:   "+numEval);
+            gaVars.add(" Number of Runs:      "+numRuns);
+            gaVars.add(" Log File Name:       "+logFileName);
+            gaVars.add(" Log Interval:        "+logInterval);
+            gaVars.add(" Memespace IP:        "+memespaceIP);
+            gaVars.add(" Memespace Port:      "+memespacePort);
+            gaVars.add(" Migration Rate:      "+migrationRate);
          }
       
          envVarChange.setText("");
@@ -2450,166 +2452,166 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          gaVars.clear();
          gaVars.add("Parameters:");
          if(gaName.equals("Standard EP")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:    "+popSize);
+            gaVars.add(" Mutation Rate:      "+mutRate);
+            gaVars.add(" Mutation Range:     "+mutRange);
+            gaVars.add(" Total Evaluations:  "+numEval);
+            gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Log File Name:      "+logFileName);
+            gaVars.add(" Log Interval:       "+logInterval);
+            gaVars.add(" Memespace IP:       "+memespaceIP);
+            gaVars.add(" Memespace Port:     "+memespacePort);
+            gaVars.add(" Migration Rate:     "+migrationRate);
          }
          else if(gaName.equals("Continuous Standard EP")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:    "+popSize);
+            gaVars.add(" Mutation Rate:      "+mutRate);
+            gaVars.add(" Mutation Range:     "+mutRange);
+            gaVars.add(" Total Evaluations:  "+numEval);
+            gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Log File Name:      "+logFileName);
+            gaVars.add(" Log Interval:       "+logInterval);
+            gaVars.add(" Memespace IP:       "+memespaceIP);
+            gaVars.add(" Memespace Port:     "+memespacePort);
+            gaVars.add(" Migration Rate:     "+migrationRate);
          }
          else if(gaName.equals("Meta-EP")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Eta Mutation Rate:            "+mutRate);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:    "+popSize);
+            gaVars.add(" Eta Mutation Rate:  "+mutRate);
+            gaVars.add(" Total Evaluations:  "+numEval);
+            gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Log File Name:      "+logFileName);
+            gaVars.add(" Log Interval:       "+logInterval);
+            gaVars.add(" Memespace IP:       "+memespaceIP);
+            gaVars.add(" Memespace Port:     "+memespacePort);
+            gaVars.add(" Migration Rate:     "+migrationRate);
          }
          else if(gaName.equals("Continuous Meta-EP")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Eta Mutation Rate:            "+mutRate);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:    "+popSize);
+            gaVars.add(" Eta Mutation Rate:  "+mutRate);
+            gaVars.add(" Total Evaluations:  "+numEval);
+            gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Log File Name:      "+logFileName);
+            gaVars.add(" Log Interval:       "+logInterval);
+            gaVars.add(" Memespace IP:       "+memespaceIP);
+            gaVars.add(" Memespace Port:     "+memespacePort);
+            gaVars.add(" Migration Rate:     "+migrationRate);
          }
          else if(gaName.equals("Steady-state GA with BLX")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Crossover Usage Rate: "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:            "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:  "+useOneFifthRule);
          }
          else if(gaName.equals("Generational GA with BLX")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Number of Elites:     "+numElites);
+            gaVars.add(" Crossover Usage Rate: "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:            "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:  "+useOneFifthRule);
          }
          else if(gaName.equals("Steady-generational GA with BLX")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" BLX-alpha:                    "+blxAlpha);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Crossover Usage Rate: "+crossoverUsageRate);
+            gaVars.add(" BLX-alpha:            "+blxAlpha);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:  "+useOneFifthRule);
          }
          else if(gaName.equals("Steady-state GA")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Crossover Usage Rate:         "+crossoverUsageRate);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
-			gaVars.add(" Use One-Fifth Rule?:          "+useOneFifthRule);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Crossover Usage Rate: "+crossoverUsageRate);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
+			gaVars.add(" Use One-Fifth Rule?:  "+useOneFifthRule);
          }
          else if(gaName.equals("PSO")) {
-            gaVars.add(" Number of Particles:          "+popSize);
-            gaVars.add(" Neighborhood Size:            "+neighborhoodSize);
-            gaVars.add(" Constriction Coefficient?:    "+constCoeff);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Number of Particles:       "+popSize);
+            gaVars.add(" Neighborhood Size:         "+neighborhoodSize);
+            gaVars.add(" Constriction Coefficient?: "+constCoeff);
+            gaVars.add(" Total Evaluations:         "+numEval);
+            gaVars.add(" Number of Runs:            "+numRuns);
+            gaVars.add(" Log File Name:             "+logFileName);
+            gaVars.add(" Log Interval:              "+logInterval);
+            gaVars.add(" Memespace IP:              "+memespaceIP);
+            gaVars.add(" Memespace Port:            "+memespacePort);
+            gaVars.add(" Migration Rate:            "+migrationRate);
          }
          else if(gaName.equals("Generational DEA")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Phi:                          "+phi);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Number of Elites:     "+numElites);
+            gaVars.add(" Phi:                  "+phi);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
          }
          else if(gaName.equals("Steady-state DEA")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Phi:                          "+phi);
-            gaVars.add(" Mutation Usage Rate:          "+mutUsageRate);
-            gaVars.add(" Mutation Rate:                "+mutRate);
-            gaVars.add(" Mutation Range:               "+mutRange);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Phi:                  "+phi);
+            gaVars.add(" Mutation Usage Rate:  "+mutUsageRate);
+            gaVars.add(" Mutation Rate:        "+mutRate);
+            gaVars.add(" Mutation Range:       "+mutRange);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
          }
          else if(gaName.equals("Elitist EDA")) {
-            gaVars.add(" Population Size:              "+popSize);
-            gaVars.add(" Number of Elites:             "+numElites);
-            gaVars.add(" Total Evaluations:            "+numEval);
-            gaVars.add(" Number of Runs:               "+numRuns);
-            gaVars.add(" Log Results?:                 "+logResults);
-            gaVars.add(" Log Interval:                 "+logInterval);
-            gaVars.add(" Memespace IP:                 "+memespaceIP);
-            gaVars.add(" Memespace Port:               "+memespacePort);
-            gaVars.add(" Migration Rate:               "+migrationRate);
+            gaVars.add(" Population Size:      "+popSize);
+            gaVars.add(" Number of Elites:     "+numElites);
+            gaVars.add(" Total Evaluations:    "+numEval);
+            gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Log File Name:        "+logFileName);
+            gaVars.add(" Log Interval:         "+logInterval);
+            gaVars.add(" Memespace IP:         "+memespaceIP);
+            gaVars.add(" Memespace Port:       "+memespacePort);
+            gaVars.add(" Migration Rate:       "+migrationRate);
          }
       
          pg3Var.setListData(gaVars);
@@ -2629,7 +2631,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 			double mutationRange = 0.1;
 			double etaMutationRate = 0.1;
 			double phi = 4.1;
-			int logResults = 0;
+			int logFileName = 0;
 			int logInterval = -1;
 			String memespaceIP = "";
 			int memespacePort = 0;
@@ -2689,7 +2691,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 							phi = Double.parseDouble(tok.nextToken().trim());
 						}
 						else if(label.equalsIgnoreCase("Log Results")) {
-							logResults = Integer.parseInt(tok.nextToken().trim());
+							logFileName = Integer.parseInt(tok.nextToken().trim());
 						}
 						else if(label.equalsIgnoreCase("Log Interval")) {
 							logInterval = Integer.parseInt(tok.nextToken().trim());
@@ -2729,7 +2731,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 				System.out.println("IO Exception in " + filename);
 				return null;
 			}
-			if(logResults <= 0) {
+			if(logFileName <= 0) {
 				logFilename = null;
 			}
 			
@@ -2897,17 +2899,17 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 					 double[] maxForPSO = new double[interval.length];
 			         for(int i = 0; i < interval.length; i++) {
 						String dataType = (String)varTypes.elementAt(i);
-						if(dataType.equalsIgnoreCase("boolean")) {
+						if(dataType.equalsIgnoreCase("boolean") || dataType.equalsIgnoreCase("bool")) {
 							interval[i] = new Interval(Interval.Type.BOOLEAN, new Boolean(false), new Boolean(true));
 							canUsePSO = false;
 						}
-						else if(dataType.equalsIgnoreCase("integer")) {
+						else if(dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("int")) {
 							int min = Integer.parseInt((String)lowBounds.get(i));
 							int max = Integer.parseInt((String)upBounds.get(i));
 							interval[i] = new Interval(Interval.Type.INTEGER, new Integer(min), new Integer(max));
 							canUsePSO = false;
 						}
-						else if(dataType.equalsIgnoreCase("ordinal")) {
+						else if(dataType.equalsIgnoreCase("ordinal") || dataType.equalsIgnoreCase("ord")) {
 							double min = Double.parseDouble((String)lowBounds.get(i));
 							double max = Double.parseDouble((String)upBounds.get(i));
 							interval[i] = new Interval(Interval.Type.DOUBLE, new Double(min), new Double(max));
