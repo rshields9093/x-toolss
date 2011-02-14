@@ -60,11 +60,13 @@
      
       private int realMaxVarLength = maxVarLength+1;
    
-       public Module2(){//new module
+       public Module2(){
+    	   //new module
          init("");
       }
       
-       public Module2(String file){//existing module
+       public Module2(String file){
+    	   //existing module
          init(file);  
       }
    

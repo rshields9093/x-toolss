@@ -43,9 +43,11 @@ public class XTOOLSMigrationOperator implements MigrationOperator {
 	public Individual[] migrate(Population population, Individual[] individual) {
 		if(Math.random() <= migrationRate) {
 			// Randomly migrate individual
-//			int randIndex = random.nextInt(individual.length);
+			//int randIndex = random.nextInt(individual.length);
 
 			// Migrate best individual
+			
+			//Find best individual
 			int randIndex = 0;
 			for(int i = 1; i < individual.length; i++) {
 				if(individual[i].getFitness() < individual[randIndex].getFitness()) {
@@ -53,6 +55,7 @@ public class XTOOLSMigrationOperator implements MigrationOperator {
 				}
 			}
 			
+			//Create new individual with same fitness as best individual, then return new individual
 			Individual individualOut = null;
 			if(individual[randIndex] instanceof Particle) {
 				individualOut = new Individual(((Particle)individual[randIndex]).getP());
