@@ -19,31 +19,29 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-   import java.awt.*;
-   import java.awt.event.*;
-   import javax.swing.*;
-   import java.io.*;
-   import javax.swing.border.TitledBorder;
-   import javax.swing.border.EtchedBorder;
-   import java.util.List;
-   import java.util.Vector;
-   import java.util.Arrays;
-   import java.util.Map;
-   import java.util.StringTokenizer;
-   import java.lang.reflect.Array;
-   import java.awt.datatransfer.DataFlavor;
-   import java.awt.datatransfer.Transferable;
-   import java.awt.dnd.DnDConstants;
-   import java.awt.dnd.DropTarget;
-   import java.awt.dnd.DropTargetDragEvent;
-   import java.awt.dnd.DropTargetDropEvent;
-   import java.awt.dnd.DropTargetEvent;
-   import java.awt.dnd.DropTargetListener;
-   
-   import javax.swing.event.*;
-   import javax.swing.text.*; 
-   
-   import edu.auburn.eng.aci.genevot.Chromosome;
+	import java.awt.*;
+	import java.awt.event.*;
+	import javax.swing.*;
+	import java.io.*;
+	import javax.swing.border.TitledBorder;
+	import javax.swing.border.EtchedBorder;
+	import java.util.List;
+	import java.util.Vector;
+	import java.util.Arrays;
+	import java.util.Map;
+	import java.util.StringTokenizer;
+	import java.lang.reflect.Array;
+	import java.awt.datatransfer.DataFlavor;
+	import java.awt.datatransfer.Transferable;
+	import java.awt.dnd.DnDConstants;
+	import java.awt.dnd.DropTarget;
+	import java.awt.dnd.DropTargetDragEvent;
+	import java.awt.dnd.DropTargetDropEvent;
+	import java.awt.dnd.DropTargetEvent;
+	import java.awt.dnd.DropTargetListener;
+	import javax.swing.event.*;
+	import javax.swing.text.*; 
+	import edu.auburn.eng.aci.genevot.Chromosome;
 	
     class AppFile
    {
@@ -53,29 +51,35 @@
       float[] upperBounds, lowerBounds;
       Object[] genArray;
       
-       public AppFile(){//new app
-         init("");
+      public AppFile(){
+    	   //new app
+    	   init("");
       }
       
-       public AppFile(String file){//existing app
-         init(file);  
+      public AppFile(String file){
+    	  //existing app
+    	  init(file);  
       }
    
-       private void init(String file){
-         filePath = file;
-         if(!file.equals(""))
-            setFileName();
-         else
-            fileName = "";
+      private void init(String file){
+		filePath = file;
+		if(!file.equals(""))
+		{
+			setFileName();
+		}
+		else
+		{
+			fileName = "";
+		}
             
-         modules = new Vector();
-         aliases = new Vector();
-         constants = new Vector();
-         genVec = new Vector();
-         genArray = genVec.toArray();
-         float[] temp = {0};  
-         upperBounds = temp;
-         lowerBounds = temp;
+			modules = new Vector();
+			aliases = new Vector();
+			constants = new Vector();
+			genVec = new Vector();
+			genArray = genVec.toArray();
+			float[] temp = {0};  
+			upperBounds = temp;
+			lowerBounds = temp;
       }
       
        public void setFilePath(String path){
@@ -109,6 +113,10 @@
        public String getFileName(){      
          return fileName;
       }
+       
+       public String getDir(){
+    	   return directory;
+       }
    
        public void setModuleArray(Vector mod){
          modules = mod;
@@ -274,28 +282,28 @@
       }
 	  
 	
-	class ProcessStreamReader implements Runnable {
-     private InputStream is;
-
-     public ProcessStreamReader(InputStream is) {
-          this.is = is;
-     }
-
-     
-     public void run() {
-          try {
-               BufferedReader in = new BufferedReader(new InputStreamReader(is));
-               String temp = null;
-               while ((temp = in.readLine()) != null) {
-                    System.out.println(temp);
-               }
-               is.close();
-          }
-          catch (Exception e) {
-               e.printStackTrace();
-          }
-     }
-}
+		class ProcessStreamReader implements Runnable {
+			 private InputStream is;
+		
+			 public ProcessStreamReader(InputStream is) {
+			      this.is = is;
+			 }
+			
+			 
+			 public void run() {
+			      try {
+			           BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			           String temp = null;
+			           while ((temp = in.readLine()) != null) {
+			                System.out.println(temp);
+			           }
+			           is.close();
+			      }
+			      catch (Exception e) {
+			           e.printStackTrace();
+			      }
+			 }
+		}
 	
    }
    

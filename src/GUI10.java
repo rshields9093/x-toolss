@@ -134,8 +134,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
       ImageIcon nextIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("next.gif")));
       ImageIcon backIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("back.gif")));
    
-//      Image minIcon = Toolkit.getDefaultToolkit()
-//      	.getImage(java.net.URLClassLoader.getSystemResource("CEV1.jpg"));
+      Image minIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("CEV1.jpg"));
       Image errIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("err1.jpg"));
       	
       EtchedBorder b1;
@@ -285,10 +284,15 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          aboutMenuItem.addActionListener(
                 new MenuActionListener(){
                    public void actionPerformed(ActionEvent event) {
-                     JOptionPane.showMessageDialog(null, "Copyright (c) 2005 by the Applied Computational " + 
+                     JOptionPane.showMessageDialog(null, "X-TOOLSS 1.2 r11\n\nCopyright (c) 2005 by the Applied Computational " + 
                         					"Intelligence Lab,\nDepartment of Computer Science & Software Engineering (Auburn " +
-                        					"University)\ncreated by Mike Tinker, Gerry Dozier, Aaron Garrett, Lauren Goff, Mike " + 
-                        					"SanSoucie, and Patrick Hull.", "About X-TOOLSS", JOptionPane.INFORMATION_MESSAGE);
+                        					"University)\ncreated by Mike Tinker, Gerry Dozier, Aaron Garrett, Lauren Goff, \nMike " + 
+                        					"SanSoucie, and Patrick Hull.\n\nCopyright (c) 2011 Joshua Adams\n\n" +
+                        					"X-TOOLSS is free software: you can redistribute it and/or modify \n" +
+                        					"it under the terms of the GNU General Public License as published by \n" +
+                        					"the Free Software Foundation, either version 3 of the License, or \n" +
+                        					"(at your option) any later version.",
+                        					"About X-TOOLSS", JOptionPane.INFORMATION_MESSAGE);
                   }});
          helpMenu.add(indexMenuItem);
          helpMenu.add(aboutMenuItem);
@@ -336,7 +340,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          pg3.hide();
       }
        
-   	//**********************************************************************
+   	  //**********************************************************************
       //
       // COMPONENT INITIALIZATION
       //
@@ -835,6 +839,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                pg1AddFile.setText(file.getAbsolutePath());
                pg1Add.setEnabled(true);
                fileName = file.getAbsolutePath();
+               //System.out.println(fileName);
                pg1AddFile.setToolTipText(fileName);
             }
          } 
@@ -1178,7 +1183,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                                     JOptionPane.YES_NO_CANCEL_OPTION); 								
          if (n == JOptionPane.YES_OPTION) {
             System.exit(0);
-         } 
+         }
+         //pg1.setVisible(false);
       }
       
        private String setupGeneticRep(){
@@ -1729,17 +1735,17 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 		 double[] maxForPSO = new double[interval.length];
          for(int i = 0; i < interval.length; i++) {
 			String dataType = (String)varTypes.elementAt(i);
-			if(dataType.equalsIgnoreCase("boolean")) {
+			if(dataType.equalsIgnoreCase("boolean") || dataType.equalsIgnoreCase("bool")) {
 				interval[i] = new Interval(Interval.Type.BOOLEAN, new Boolean(false), new Boolean(true));
 				canUsePSO = false;
 			}
-			else if(dataType.equalsIgnoreCase("integer")) {
+			else if(dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("int")) {
 				int min = Integer.parseInt((String)lowBounds.get(i));
 				int max = Integer.parseInt((String)upBounds.get(i));
 				interval[i] = new Interval(Interval.Type.INTEGER, new Integer(min), new Integer(max));
 				canUsePSO = false;
 			}
-			else if(dataType.equalsIgnoreCase("ordinal")) {
+			else if(dataType.equalsIgnoreCase("ordinal") || dataType.equalsIgnoreCase("ord")) {
 				double min = Double.parseDouble((String)lowBounds.get(i));
 				double max = Double.parseDouble((String)upBounds.get(i));
 				interval[i] = new Interval(Interval.Type.DOUBLE, new Double(min), new Double(max));
@@ -1766,9 +1772,14 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
          MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numEval.intValue(), tt);
          boolean shouldLog = !logFileName.equalsIgnoreCase("");
+         File xtsFile = new File((String) xlsFiles.get(0));
+         String workingDir = xtsFile.getParent();
 		 String logFilename = (shouldLog)? logFileName + ".log" : "xtoolss.log";
+		 logFilename = workingDir+File.separator+logFilename;
          String outFilename = (shouldLog)? logFileName + ".out" : "xtoolss.out";
+         outFilename = workingDir+File.separator+outFilename;
          String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
+         statFilename = workingDir+File.separator+statFilename;
          XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
@@ -1875,8 +1886,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 			}
          }
       }
-   	
-   
+   	   
        private void updateParameter(String gaName, int selIndex, String text) {
          float value = 0.0f;
          try {
