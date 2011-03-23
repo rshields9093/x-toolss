@@ -54,6 +54,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -71,6 +72,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import edu.auburn.eng.aci.genevot.*;
 import edu.auburn.eng.aci.genevot.BLXCrossoverOperator;
 import edu.auburn.eng.aci.genevot.GaussianMutationOperator;
 import edu.auburn.eng.aci.genevot.GenerationalSelection;
@@ -91,110 +93,112 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
     
     public class GUI10 extends JFrame implements ActionListener, DropTargetListener
    {
-    
-       public GUI10() {
+      
+    	ThreadTerminator tt;
+    	Population population;
+    	ParticleSwarmOptimization pso;
+        XTOOLSECMonitor xtoolsECMon;
+        XTOOLSRunnable ecThread;
+        boolean hasStarted = false;
+        
+        //THESE NEED TO BE MODIFIED TO IMPLEMEMENT GA  
+        String[] nameOfGA = {"Generational GA with BLX", "Steady-state GA", "Steady-state GA with BLX", 
+      		  "Steady-generational GA with BLX", "PSO", "Generational DEA", "Steady-state DEA", 
+      		  "Elitist EDA", "Standard EP", "Continuous Standard EP", "Meta-EP", "Continuous Meta-EP"};
+        Integer popSize, numEval, numElites, tournSize, neighborhoodSize, constCoeff, numRuns, logInterval;
+        Float crossoverUsageRate, blxAlpha, mutUsageRate, mutRate, mutRange, phi;
+        String logFileName;
+  	    String memespaceIP;
+  	    Integer memespacePort;
+  	    Float migrationRate;
+  	    String useOneFifthRule;
+        //*******************************************
+      
+        public AppFile application;
+      
+        String ErrorMsg = "";
+        String allowedFileType = ".xts";
+        String title = "X-TOOLSS Application Builder";
+     
+        int fileCount, maxVarLength, moduleLocations[];
+        int[] avAliasLoc;
+     	
+        Vector xlsFiles, xtsNames, modules, variables, variableNames, geneticVars, geneticLoc, avAlias, varType;
+        Vector isConstant, isAlias, originalValues, actualLoc, modNum;
+        Font font = new Font("f", Font.BOLD, 12);
+        Font setwfont = new Font( "Monospaced", Font.PLAIN, 12 ); 
+     	
+        private JFrame pg1, error, pg3, currentFrame;
+        
+        ImageIcon nextIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("next.gif")));
+        ImageIcon backIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("back.gif")));
+     
+        Image minIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("CEV1.jpg"));
+        Image errIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("err1.jpg"));
+        	
+        EtchedBorder b1;
+        boolean infoLoss;   
+        
+        private JFileChooser fc;
+        MyFilter filter;
+        
+     	
+        //----------------------------------------------------------------------
+        // Menu # 1
+        //----------------------------------------------------------------------
+        private JPanel pg1BG;
+        private JPanel pg1N, pg1S, pg1W, pg1E, pg1NE, pg1SE, pg1ModCase;
+        private JButton pg1Browse, pg1Add, pg1Delete, pg1MoveUp, pg1MoveDown; 
+        private JButton pg1Back, pg1Next;
+        private JTextField pg1AddFile;
+        private JList pg1Mod;
+        DropTarget dt;
+        private String fileName;
+        private boolean isAdd = true;
+        //----------------------------------------------------------------------
+        // Menu # 2
+        //----------------------------------------------------------------------   	
+        private JPanel pg2BG;
+        private JPanel pg2top, pg2bottom, pg2S, pg2VarPan, pg2AliasPan,
+        	pg2varleft, pg2varright, pg2FieldCase, pg2Sg, pg2ButtonCase, pg2DeCase, pg2ConVal;
+        private JButton makeConstant,restoreValue, createAlias, pg2Back, pg2Next;
+        private JList pg2VarTx, pg2AliasTx;
+        private JTextField constantValue, genetics;
+        private JLabel pg2InLabel, pg2DeLabel;
+       
+        //----------------------------------------------------------------------
+        // Menu # 3
+        //----------------------------------------------------------------------   	
+        private JPanel pg3BG;
+        private JPanel pg3S, pg3top, pg3bottom, comboHolder, gaVarHolder, envHolder, gaEx;
+        private JButton pg3Back, pg3Next, varChangeB;
+        private Vector gaSelections, gaVars;
+        private JComboBox gaSelect;
+        private JTextField envVarChange;
+        private JList pg3Var;
+        private JTextArea exeText; 
+       
+        JScrollPane scrollPane, scrollvar,  deVar, errScroll, pg3scrollPane, exeSCPane;
+        
+        //----------------------------------------------------------------------
+        // Error Frame
+        //---------------------------------------------------------------------- 
+        private JTextArea errTx;
+        private JPanel errorPan;
+     
+        //----------------------------------------------------------------------
+        // Menu Bar
+        //----------------------------------------------------------------------
+        JMenuBar menuBar; 
+        JMenu fileMenu;
+        JMenu helpMenu;
+        JMenuItem indexMenuItem, aboutMenuItem;
+        JMenuItem newFile, open, exitMenu;
+        
+        
+      public GUI10() {
          init();
       }
-     
-    //**********************************************************************
-    //
-    // Variable Declaration
-    //
-    //**********************************************************************
-      
-      //THESE NEED TO BE MODIFIED TO IMPLEMEMENT GA  
-      String[] nameOfGA = {"Generational GA with BLX", "Steady-state GA", "Steady-state GA with BLX", 
-    		  "Steady-generational GA with BLX", "PSO", "Generational DEA", "Steady-state DEA", 
-    		  "Elitist EDA", "Standard EP", "Continuous Standard EP", "Meta-EP", "Continuous Meta-EP"};
-      Integer popSize, numEval, numElites, tournSize, neighborhoodSize, constCoeff, numRuns, logInterval;
-      Float crossoverUsageRate, blxAlpha, mutUsageRate, mutRate, mutRange, phi;
-      String logFileName;
-	  String memespaceIP;
-	  Integer memespacePort;
-	  Float migrationRate;
-	  String useOneFifthRule;
-      //*******************************************
-    
-      public AppFile application;
-    
-      String ErrorMsg = "";
-      String allowedFileType = ".xts";
-      String title = "X-TOOLSS Application Builder";
-   
-      int fileCount, maxVarLength, moduleLocations[];
-      int[] avAliasLoc;
-   	
-      Vector xlsFiles, xtsNames, modules, variables, variableNames, geneticVars, geneticLoc, avAlias, varType;
-      Vector isConstant, isAlias, originalValues, actualLoc, modNum;
-      Font font = new Font("f", Font.BOLD, 12);
-      Font setwfont = new Font( "Monospaced", Font.PLAIN, 12 ); 
-   	
-      private JFrame pg1, error, pg3;
-      
-      ImageIcon nextIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("next.gif")));
-      ImageIcon backIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("back.gif")));
-   
-      Image minIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("CEV1.jpg"));
-      Image errIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("err1.jpg"));
-      	
-      EtchedBorder b1;
-      boolean infoLoss;   
-      
-      private JFileChooser fc;
-      MyFilter filter;
-      
-   	
-     //----------------------------------------------------------------------
-     // Menu # 1
-     //----------------------------------------------------------------------
-      private JPanel pg1BG;
-      private JPanel pg1N, pg1S, pg1W, pg1E, pg1NE, pg1SE, pg1ModCase;
-      private JButton pg1Browse, pg1Add, pg1Delete, pg1MoveUp, pg1MoveDown; 
-      private JButton pg1Back, pg1Next;
-      private JTextField pg1AddFile;
-      private JList pg1Mod;
-      DropTarget dt;
-      private String fileName;
-      private boolean isAdd = true;
-     //----------------------------------------------------------------------
-     // Menu # 2
-     //----------------------------------------------------------------------   	
-      private JPanel pg2BG;
-      private JPanel pg2top, pg2bottom, pg2S, pg2VarPan, pg2AliasPan,
-      	pg2varleft, pg2varright, pg2FieldCase, pg2Sg, pg2ButtonCase, pg2DeCase, pg2ConVal;
-      private JButton makeConstant,restoreValue, createAlias, pg2Back, pg2Next;
-      private JList pg2VarTx, pg2AliasTx;
-      private JTextField constantValue, genetics;
-      private JLabel pg2InLabel, pg2DeLabel;
-     
-     //----------------------------------------------------------------------
-     // Menu # 3
-     //----------------------------------------------------------------------   	
-      private JPanel pg3BG;
-      private JPanel pg3S, pg3top, pg3bottom, comboHolder, gaVarHolder, envHolder, gaEx;
-      private JButton pg3Back, pg3Next, varChangeB;
-      private Vector gaSelections, gaVars;
-      private JComboBox gaSelect;
-      private JTextField envVarChange;
-      private JList pg3Var;
-      private JTextArea exeText; 
-     
-      JScrollPane scrollPane, scrollvar,  deVar, errScroll, pg3scrollPane, exeSCPane;
-      
-     //----------------------------------------------------------------------
-     // Error Frame
-     //---------------------------------------------------------------------- 
-      private JTextArea errTx;
-      private JPanel errorPan;
-   
-     //----------------------------------------------------------------------
-     // Menu Bar
-     //----------------------------------------------------------------------
-      JMenuBar menuBar; 
-      JMenu fileMenu;
-      JMenu helpMenu;
-      JMenuItem indexMenuItem, aboutMenuItem;
-      JMenuItem newFile, open, exitMenu;
    
       //**********************************************************************
       //
@@ -259,44 +263,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          fc.setAcceptAllFileFilterUsed(false);
          
       	//setup menu bar
-         menuBar = new JMenuBar();
-         fileMenu = new JMenu("File   ");
-         MenuActionListener menuAction = new MenuActionListener();
-         newFile = new JMenuItem("New Application", KeyEvent.VK_N); 
-         newFile.addActionListener(menuAction);
-         open = new JMenuItem("Open Application", KeyEvent.VK_O); 
-         open.addActionListener(menuAction);
-         exitMenu = new JMenuItem("Exit", KeyEvent.VK_T); 
-         exitMenu.addActionListener(menuAction);
-         fileMenu.add(newFile);
-         fileMenu.add(open);
-         fileMenu.addSeparator();
-         fileMenu.add(exitMenu);
-         menuBar.add(fileMenu);
-         helpMenu = new JMenu("Help");
-		 indexMenuItem = new JMenuItem("Index...");
-         indexMenuItem.addActionListener(
-                new MenuActionListener(){
-                   public void actionPerformed(ActionEvent event) {
-                     XHelpFrame.showHelp();
-                  }});
-         aboutMenuItem = new JMenuItem("About X-TOOLSS...");
-         aboutMenuItem.addActionListener(
-                new MenuActionListener(){
-                   public void actionPerformed(ActionEvent event) {
-                     JOptionPane.showMessageDialog(null, "X-TOOLSS 1.2 r11\n\nCopyright (c) 2005 by the Applied Computational " + 
-                        					"Intelligence Lab,\nDepartment of Computer Science & Software Engineering (Auburn " +
-                        					"University)\ncreated by Mike Tinker, Gerry Dozier, Aaron Garrett, Lauren Goff, \nMike " + 
-                        					"SanSoucie, and Patrick Hull.\n\nCopyright (c) 2011 Joshua Adams\n\n" +
-                        					"X-TOOLSS is free software: you can redistribute it and/or modify \n" +
-                        					"it under the terms of the GNU General Public License as published by \n" +
-                        					"the Free Software Foundation, either version 3 of the License, or \n" +
-                        					"(at your option) any later version.",
-                        					"About X-TOOLSS", JOptionPane.INFORMATION_MESSAGE);
-                  }});
-         helpMenu.add(indexMenuItem);
-         helpMenu.add(aboutMenuItem);
-         menuBar.add(helpMenu);
+         
       	
       	//Frame initialization
 /*         try {
@@ -310,6 +277,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          JFrame.setDefaultLookAndFeelDecorated(true); //false
 */         
 		pg1 = new JFrame(title);
+		currentFrame = pg1;
          pg3 = new JFrame("Module Execution");
          
          pg1.setResizable(false);
@@ -323,7 +291,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          initMenu2();
          initMenu3();
       			
-         pg1.setJMenuBar(menuBar);						
+         //pg1.setJMenuBar(menuBar);						
          setupMenu1();
          setupMenu2();
          setupMenu3();
@@ -336,8 +304,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          pg1.setLocationRelativeTo(null);
          error.setLocationRelativeTo(null);
         
-         pg1.show();
-         pg3.hide();
+         pg1.setVisible(true);
+         pg3.setVisible(false);
       }
        
    	  //**********************************************************************
@@ -354,7 +322,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          pg1.addWindowListener(
                 new WindowAdapter() { 
                    public void windowClosing(WindowEvent e) {
-                     exit();
+                     pg1.setVisible(false);
                   }
                    public void windowIconified(WindowEvent e) {
                      pg3.toFront();                 
@@ -577,11 +545,11 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                   }
                    public void windowIconified(WindowEvent e) {
                      pg3.setLocationRelativeTo(null);
-                     pg1.hide();                 
+                     pg1.setVisible(false);                 
                   }
                    public void windowDeiconified(WindowEvent e) {
                      pg3.setLocationRelativeTo(null);
-                     pg1.show();
+                     pg1.setVisible(true);
                      pg3.toFront();               
                   }
                });
@@ -1015,7 +983,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                pg2VarTx.setListData(variables);
                pg2AliasTx.setListData(avAlias);
                
-               error.hide();
+               error.setVisible(false);
                //sw = new SwitchFrames( pg1, pg2 );
                //sw.switcher();
                pg1.getContentPane().removeAll();
@@ -1027,7 +995,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else{
                errTx.setText(modError);
                error.setLocationRelativeTo(pg1);
-               error.show();
+               error.setVisible(true);
                error.toFront();
             }
          }
@@ -1054,8 +1022,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                int xLoc = pg1.getLocation().x + pg1.getWidth() / 4;
                int yLoc = pg1.getLocation().y;
                pg3.setLocation(xLoc, yLoc);
-               pg3.show();
-            
+               pg3.setVisible(true);
+               currentFrame = pg3;
                genetics.setText(setupGeneticRep());
             }
          }
@@ -1074,6 +1042,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                infoLoss = true;
                pg1Add.setText("Delete");
                pg1Add.setEnabled(true);
+               currentFrame = pg1;
             }
          }
          // ** Set Constant - menu #2 **
@@ -1148,8 +1117,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             createAlias.setEnabled(true);
             pg2BG.remove(pg2Sg);
             pg2BG.add(pg2S);
-            
-            pg3.hide();
+            currentFrame = pg1;
+            pg3.setVisible(false);
          }
          else if (e.getSource() == varChangeB){
             int selIndex = pg3Var.getSelectedIndex();
@@ -1167,6 +1136,9 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
             else{
 //               pg3BG.add(gaEx);
 //               pg3.pack();
+               pg1.setVisible(false);
+               //pg2.setVisible(false);
+               pg3.setVisible(false);
                executeApp();
             }
          }
@@ -1175,17 +1147,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 			reloadParameterList(gaName);
 		 }
       }
-   
-       private void exit(){
-         int n = JOptionPane.showConfirmDialog(pg1,
-                                    "Exit Current Application?",
-                                    "Exit",
-                                    JOptionPane.YES_NO_CANCEL_OPTION); 								
-         if (n == JOptionPane.YES_OPTION) {
-            System.exit(0);
-         }
-         //pg1.setVisible(false);
-      }
+
       
        private String setupGeneticRep(){
          String genRep = "< ";
@@ -1631,77 +1593,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
       // MENU SUPPORT
       //
       //**********************************************************************
-       private class MenuActionListener implements ActionListener{
-          
-          public void actionPerformed(ActionEvent e) { 
-            if(e.getSource() == newFile){
-               boolean oked = true;
-               if(infoLoss){
-                  oked = false;
-                  int n = JOptionPane.showConfirmDialog(pg1,
-                                    "Create new application? Data for current application may be lost.",
-                                    "New",
-                                    JOptionPane.YES_NO_CANCEL_OPTION); 								
-                  if (n == JOptionPane.YES_OPTION) {
-                     oked = true;
-                  }
-               }
-               if(oked){
-                  infoLoss = false;
-                  pg1AddFile.setText("");
-                  pg1Add.setEnabled(false);
-                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
-                  resetModules();
-                  xlsFiles = new Vector();
-                  pg1.getContentPane().removeAll();
-                  pg1.getContentPane().add(pg1BG);
-                  pg1.pack();
-                  pg1BG.repaint();
-                  pg1Mod.setListData(xlsFiles);
-                  fileCount = 0;
-                  exeText.setText("");
-                  pg3BG.remove(gaEx);
-                  pg3.pack();
-               }
-            }
-            else if (e.getSource() == open) {
-               boolean oked = true;
-               if(infoLoss){
-                  oked = false;
-                  int n = JOptionPane.showConfirmDialog(pg1,
-                                    "Open existing application? Data for current application may be lost.",
-                                    "Open",
-                                    JOptionPane.YES_NO_CANCEL_OPTION); 								
-                  if (n == JOptionPane.YES_OPTION) {
-                     oked = true;
-                  }
-               }
-               if(oked){
-               //reset
-                  infoLoss = false;
-                  pg1AddFile.setText("");
-                  pg1Add.setEnabled(false);
-                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
-                  resetModules();
-                  xlsFiles = new Vector();
-                  pg1.getContentPane().removeAll();
-                  pg1.getContentPane().add(pg1BG);
-                  pg1.pack();
-                  pg1BG.repaint();
-                  pg1Mod.setListData(xlsFiles);
-                  fileCount = 0;
-                       
-                  exeText.setText("");
-                  pg3BG.remove(gaEx);
-                  pg3.pack();
-               //open
-               }
-            }
-            else if (e.getSource() == exitMenu) {
-               exit();
-            }
-         }
-      }
+       
    	
        private void executeApp(){
          application.setModuleArray(modules);
@@ -1767,7 +1659,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 			}
          }
 
-		 ThreadTerminator tt = new ThreadTerminator();
+		 tt = new ThreadTerminator();
          String gaName = (String)gaSelect.getSelectedItem();
          XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
          MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numEval.intValue(), tt);
@@ -1780,7 +1672,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          outFilename = workingDir+File.separator+outFilename;
          String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
          statFilename = workingDir+File.separator+statFilename;
-         XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+         xtoolsECMon = new XTOOLSECMonitor(true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+         currentFrame = xtoolsECMon.getFrame();
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
 			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort.intValue(), migrationRate.floatValue());
@@ -1789,7 +1682,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 			migOp = new XTOOLSMigrationOperator("", 0, 0.0f);		 
 		 }
 		
-		 Population population = null;
+		 population = null;
 //		public Population(int size, Interval[] geneBounds, EvaluationFunction ef, ParentSelection ps, RecombinationOperator ro, MutationOperator mo, SurvivorSelection ss, MigrationOperator mig) {
 		 ParentSelection parentSelection = null;
 		 RecombinationOperator recombinationOp = null;
@@ -1871,15 +1764,17 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 	         }
 			 
 	         population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
-			 XTOOLSRunnable ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns.intValue(), tt, statFilename, true, oneFifthRule);
+			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns.intValue(), tt, statFilename, true, oneFifthRule);
 			 ecThread.start();
+			 hasStarted = true;
 		 }
 		 else {
 			if(canUsePSO) {
 	            boolean useCC = (constCoeff.intValue() > 0)? true : false;
-	            ParticleSwarmOptimization pso = new ParticleSwarmOptimization(popSize.intValue(), neighborhoodSize.intValue(), minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
-				XTOOLSRunnable ecThread = new XTOOLSRunnable(pso, numRuns.intValue(), tt, statFilename, true);
+	            pso = new ParticleSwarmOptimization(popSize.intValue(), neighborhoodSize.intValue(), minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
+				ecThread = new XTOOLSRunnable(pso, numRuns.intValue(), tt, statFilename, true);
 				ecThread.start();
+				hasStarted = true;
 			}
 			else {
 				JOptionPane.showMessageDialog(null, "You must have only float or double inputs to use PSO.");
@@ -2645,336 +2540,39 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
       
          pg3Var.setListData(gaVars);
       }
-   
-		public static XTOOLSRunnable readECFile(String filename, Interval[] interval, boolean canUsePSO, double[] minForPSO, double[] maxForPSO, XTOOLSEvaluationFunction xtoolsEvalFun) {
-			String ecName = "Steady-state GA with BLX";
-			int popSize = 20;
-			int numFunEvals = 500;
-			int numElites = 1;
-			int hoodSize = 3;
-			int constCoeff = 1;
-			double crossoverUsageRate = 1.0;
-			double blxAlpha = 0.25;
-			double mutationUsageRate = 1.0;
-			double mutationRate = 0.1;
-			double mutationRange = 0.1;
-			double etaMutationRate = 0.1;
-			double phi = 4.1;
-			int logFileName = 0;
-			int logInterval = -1;
-			String memespaceIP = "";
-			int memespacePort = 0;
-			double migrationRate = 0.0;
-			int numRuns = 1;
-			String logFilename = "xtoolss.log";
-			String outFilename = "xtoolss.out";
-			String statFilename = "xtoolss.stat";
-			String useOneFifthRule = "NO";
-			
-			try {
-				BufferedReader in = null;
-				in = new BufferedReader(new FileReader(filename));
-				while(in.ready()) {
-					String line = in.readLine();
-					StringTokenizer tok = new StringTokenizer(line, ":");
-					int numToks = tok.countTokens();
-					if(numToks == 2) {
-						String label = tok.nextToken().trim();
-						if(label.equalsIgnoreCase("Type")) {
-							ecName = tok.nextToken().trim();
-						}
-						else if(label.equalsIgnoreCase("Population Size")) {
-							popSize = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Number of Function Evaluations")) {
-							numFunEvals = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Number of Elites")) {
-							numElites = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Neighborhood Size")) {
-							hoodSize = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Constriction Coefficient")) {
-							constCoeff = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Crossover Usage Rate")) {
-							crossoverUsageRate = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("BLX Alpha")) {
-							blxAlpha = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Mutation Usage Rate")) {
-							mutationUsageRate = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Mutation Rate")) {
-							mutationRate = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Mutation Range")) {
-							mutationRange = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Eta Mutation Rate")) {
-							etaMutationRate = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Phi")) {
-							phi = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Log Results")) {
-							logFileName = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Log Interval")) {
-							logInterval = Integer.parseInt(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Memespace IP")) {
-							memespaceIP = tok.nextToken().trim();
-						}
-						else if(label.equalsIgnoreCase("Memespace Port")) {
-							memespacePort = Integer.parseInt(tok.nextToken().trim());					
-						}
-						else if(label.equalsIgnoreCase("Migration Rate")) {
-							migrationRate = Double.parseDouble(tok.nextToken().trim());
-						}
-						else if(label.equalsIgnoreCase("Number of Runs")) {
-							numRuns = Integer.parseInt(tok.nextToken().trim());					
-						}
-						else if(label.equalsIgnoreCase("Log Filename")) {
-							logFilename = tok.nextToken().trim();					
-						}
-						else if(label.equalsIgnoreCase("Out Filename")) {
-							outFilename = tok.nextToken().trim();					
-						}
-						else if(label.equalsIgnoreCase("Stat Filename")) {
-							statFilename = tok.nextToken().trim();					
-						}
-						else if(label.equalsIgnoreCase("Use One-Fifth Rule")) {
-							useOneFifthRule = tok.nextToken().trim();					
-						}
-					}	
-					if(logInterval <= 0) {
-						logInterval = numFunEvals;
-					}
-				}
-				in.close();
-			}
-			catch(IOException e) {
-				System.out.println("IO Exception in " + filename);
-				return null;
-			}
-			if(logFileName <= 0) {
-				logFilename = null;
-			}
-			
-			 ThreadTerminator tt = new ThreadTerminator();
-			 MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numFunEvals, tt);
-			 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(false, logInterval, numFunEvals, tt, logFilename, outFilename);
-			 XTOOLSMigrationOperator migOp = null;
-			 if(memespaceIP.length() > 0 && memespacePort > 0) {
-				migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort, (float)migrationRate);
-			 }
-			 else {
-				migOp = new XTOOLSMigrationOperator("", 0, 0.0f);		 
-			 }
 
-			
-			 Population population = null;
-			 ParentSelection parentSelection = null;
-			 RecombinationOperator recombinationOp = null;
-			 MutationOperator mutationOp = null;
-			 SurvivorSelection survivorSelection = null;
-			 
-	         if(!ecName.equals("PSO")) {
-				 if(ecName.equals("Standard EP")) {
-					EPOperators epOps = new EPOperators(false, false, etaMutationRate);
-					parentSelection = epOps;
-					recombinationOp = epOps;
-					mutationOp = new GaussianMutationOperator(1.0, mutationRate, mutationRange);
-					survivorSelection = new MuPlusLambdaSelection();
-		         }
-		         else if(ecName.equals("Continuous Standard EP")) {
-					EPOperators epOps = new EPOperators(true, false, etaMutationRate);
-					parentSelection = epOps;
-					recombinationOp = epOps;
-					mutationOp = new GaussianMutationOperator(1.0, mutationRate, mutationRange);
-					survivorSelection = new MuPlusLambdaSelection();
-		         }
-		         else if(ecName.equals("Meta-EP")) {
-					EPOperators epOps = new EPOperators(false, true, etaMutationRate);
-					parentSelection = epOps;
-					recombinationOp = epOps;
-					mutationOp = epOps;
-					survivorSelection = new MuPlusLambdaSelection();
-		         }
-		         else if(ecName.equals("Continuous Meta-EP")) {
-					EPOperators epOps = new EPOperators(true, true, etaMutationRate);
-					parentSelection = epOps;
-					recombinationOp = epOps;
-					mutationOp = epOps;
-					survivorSelection = new MuPlusLambdaSelection();
-		         }
-		         else if(ecName.equals("Steady-state GA with BLX")) {
-					parentSelection = new TournamentSelection(2, 2);
-					survivorSelection = new SteadyStateSelection();
-					recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-		         }
-		         else if(ecName.equals("Generational GA with BLX")) {
-					parentSelection = new TournamentSelection(2, 2);
-					survivorSelection = new GenerationalSelection(numElites);
-					recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-		         }
-		         else if(ecName.equals("Steady-generational GA with BLX")) {
-					parentSelection = new TournamentSelection(2, 2);
-					survivorSelection = new SteadyGenerationalSelection(1);
-					recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-		         }
-		         else if(ecName.equals("Steady-state GA")) {
-					parentSelection = new TournamentSelection(2, 2);
-					survivorSelection = new SteadyStateSelection();
-					recombinationOp = new UniformCrossoverOperator(crossoverUsageRate);
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-		         }
-		         else if(ecName.equals("Generational DEA")) {
-					parentSelection = new TournamentSelection(2, (popSize - numElites) * 2);
-					survivorSelection = new GenerationalSelection(numElites);
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-					recombinationOp = new DEOperators(true, phi);
-		         }
-		         else if(ecName.equals("Steady-state DEA")) {
-					parentSelection = new TournamentSelection(2, (popSize - numElites) * 2);
-					survivorSelection = new SteadyStateSelection();
-					mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-					recombinationOp = new DEOperators(false, phi);
-		         }
-		         else if(ecName.equals("Elitist EDA")) {
-					EDAOperators edaOps = new EDAOperators(numElites);
-					parentSelection = edaOps;
-					survivorSelection = edaOps;
-					mutationOp = edaOps;
-					recombinationOp = edaOps;
-		         }
-				 
-				 OneFifthRule oneFifthRule = (useOneFifthRule.equalsIgnoreCase("YES"))? new OneFifthRule() : null;
-		         population = new Population(popSize, interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
-				 XTOOLSRunnable ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns, tt, statFilename, false, oneFifthRule);
-				 return ecThread;
-			 }
-			 else {
-				if(canUsePSO) {
-		            boolean useCC = (constCoeff > 0)? true : false;
-		            ParticleSwarmOptimization pso = new ParticleSwarmOptimization(popSize, hoodSize, minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
-					XTOOLSRunnable ecThread = new XTOOLSRunnable(pso, numRuns, tt, statFilename, false);
-					return ecThread;
-				}
-				else {
-					System.out.println("You must have only float or double inputs to use PSO.");
-					return null;
-				}
-	         }
-		
-		}
-		
-       public static void main(String args[]) {
-			if(args.length == 0) {
-		         java.awt.EventQueue.invokeLater(
-		                new Runnable() {
-		                   public void run() {
-		                     new GUI10();
-		                  }
-		               });
-			}
-			else if(args.length == 1) {
-				// Read the run file and pull out the xts stuff and the ec stuff.
-				
-			}
-			else if(args.length == 2) {
-				// Read the xts file and the ec file
-				Module2 problem = new Module2(args[0]);
-				String error = problem.processFile();
-				if(error.length() > 0) {
-					System.out.println(error);
-					return;
-				}
-				else {
-					 AppFile application = new AppFile();
-					 Vector modules = new Vector();
-					 modules.add(problem);
-			         application.setModuleArray(modules);
-			       
-			         String temp, r1, r2;
-			         Vector varValues = ((Module2)modules.get(0)).inputVarValues;
-			         Vector varTypes = ((Module2)modules.get(0)).getInputVariableTypes();
-			         Vector lowBounds = new Vector();
-			         Vector upBounds = new Vector();
-			         for(int i = 0; i < varValues.size(); i++){	         
-			            temp = (String)varValues.get(i);
-			            temp = temp.replace('[', ' ');
-			            temp = temp.replace(']', ' ');
-			            temp = temp.trim();
-			            r1 = temp.substring(0, temp.indexOf(".."));
-			            r2 = temp.substring(temp.indexOf("..") + 2, temp.length());
-			            r1.trim();
-			            r2.trim();
-			            lowBounds.add(r1);
-			            upBounds.add(r2);
-			         }
-			            	
-			         application.setLowerBounds(lowBounds);  
-			         application.setUpperBounds(upBounds);
-					 Interval[] interval = new Interval[lowBounds.size()];
-					 boolean canUsePSO = true;
-					 double[] minForPSO = new double[interval.length];
-					 double[] maxForPSO = new double[interval.length];
-			         for(int i = 0; i < interval.length; i++) {
-						String dataType = (String)varTypes.elementAt(i);
-						if(dataType.equalsIgnoreCase("boolean") || dataType.equalsIgnoreCase("bool")) {
-							interval[i] = new Interval(Interval.Type.BOOLEAN, new Boolean(false), new Boolean(true));
-							canUsePSO = false;
-						}
-						else if(dataType.equalsIgnoreCase("integer") || dataType.equalsIgnoreCase("int")) {
-							int min = Integer.parseInt((String)lowBounds.get(i));
-							int max = Integer.parseInt((String)upBounds.get(i));
-							interval[i] = new Interval(Interval.Type.INTEGER, new Integer(min), new Integer(max));
-							canUsePSO = false;
-						}
-						else if(dataType.equalsIgnoreCase("ordinal") || dataType.equalsIgnoreCase("ord")) {
-							double min = Double.parseDouble((String)lowBounds.get(i));
-							double max = Double.parseDouble((String)upBounds.get(i));
-							interval[i] = new Interval(Interval.Type.DOUBLE, new Double(min), new Double(max));
-							canUsePSO = false;
-						}
-						else if(dataType.equalsIgnoreCase("float")) {
-							float min = Float.parseFloat((String)lowBounds.get(i));
-							float max = Float.parseFloat((String)upBounds.get(i));
-							interval[i] = new Interval(Interval.Type.FLOAT, new Float(min), new Float(max));
-							minForPSO[i] = min;
-							maxForPSO[i] = max;
-						}
-						else {
-							double min = Double.parseDouble((String)lowBounds.get(i));
-							double max = Double.parseDouble((String)upBounds.get(i));
-							interval[i] = new Interval(Interval.Type.DOUBLE, new Double(min), new Double(max));
-							minForPSO[i] = min;
-							maxForPSO[i] = max;
-						}
-			         }
+       public JFrame getCurrentFrame() {
+    	   return currentFrame;
+       }
+       
+       public XTOOLSRunnable getECThread(){
+    	   return ecThread;
+       }
+       
+       public boolean hasStarted(){
+    	   return hasStarted;
+       }
+       
+       public ThreadTerminator getThreadTerminator(){
+    	   return tt;
+       }
+	
+       public XTOOLSECMonitor getMonitor(){
+    	   return xtoolsECMon;
+       }
 
+       public int getMaxFunctionEvaluations() {
+			return numEval.intValue();
+	   }
 
-			         XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
-					XTOOLSRunnable ecThread = readECFile(args[1], interval, canUsePSO, minForPSO, maxForPSO, xtoolsEvalFun);
-					 ecThread.start();
-					 
-					 while(ecThread.isAlive());
-					 System.out.println("X-TOOLSS has finished.");
-				}
-								
-			}
-			else {
-				System.out.println("USAGE: java -jar xtoolss.jar");
-				System.out.println("       java -jar xtoolss.jar [run_file] -- NOT YET FUNCTIONAL");
-				System.out.println("       java -jar xtoolss.jar [xts_file] [ec_file]");
-			}
-      }
-   }
+       public int getNumFunctionEvaluations() {
+    	    int numEvals = 0;
+    	    if(population != null){
+    	    	numEvals = population.getNumFunctionEvaluations();
+    	    }else{
+    	    	if(xtoolsECMon != null) numEvals = xtoolsECMon.getCompFunctEval()*popSize;
+    	    }
+    	    return numEvals;
+       }
+}
 	

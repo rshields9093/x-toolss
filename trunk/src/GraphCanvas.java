@@ -96,6 +96,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}
 
 	public GraphCanvas(double xMin, double xMax, double yMin, double yMax) {
+		this.setPreferredSize(new Dimension(485,430));
 		this.interactive = true;
 		this.xMin = xMin;
 		this.xMax = xMax;
@@ -429,6 +430,24 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}	
 
 	public void mouseClicked(MouseEvent e) {
+		/*requestFocusInWindow();
+		
+		if(interactive) {
+			double radius = 5.0;		
+			for(int i = 0; i < points.size(); i++) {
+				Point2D.Double p = convertToPanel(points.elementAt(i).coordinate);
+				if(e.getX() >= (p.x - radius) && e.getX() <= (p.x + radius) && e.getY() >= (p.y - radius) && e.getY() <= (p.y + radius)) {
+					setPop(e, "(" + points.elementAt(i).coordinate.x + ", " + points.elementAt(i).coordinate.y + ")");
+					return;
+				}else{
+					pop.setVisible(false);
+				}
+			}	
+		}*/		
+	}
+	
+	public void mouseMoved(MouseEvent e) {
+		//pop.setVisible(false);
 		requestFocusInWindow();
 		
 		if(interactive) {
@@ -438,16 +457,15 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 				if(e.getX() >= (p.x - radius) && e.getX() <= (p.x + radius) && e.getY() >= (p.y - radius) && e.getY() <= (p.y + radius)) {
 					setPop(e, "(" + points.elementAt(i).coordinate.x + ", " + points.elementAt(i).coordinate.y + ")");
 					return;
+				}else{
+					pop.setVisible(false);
 				}
 			}	
-		}		
+		}	
 	}
 	
-	public void mouseMoved(MouseEvent e) {
-		pop.setVisible(false);
-	}
-	
-	public void mouseDragged(MouseEvent e) {}	
+	public void mouseDragged(MouseEvent e) {
+	}	
 	public void mouseEntered(MouseEvent e){}
 	public void mouseExited(MouseEvent e){}
 	public void mousePressed(MouseEvent e){}

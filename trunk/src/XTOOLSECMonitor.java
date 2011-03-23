@@ -26,15 +26,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.geom.Point2D;
 import java.awt.Color;
+
+import javax.swing.JFrame;
+
 import edu.auburn.eng.aci.genevot.*;
 
 
-public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
+public class XTOOLSECMonitor implements ECMonitor{
 	private ECResult ecResult;
 	private XTOOLSResultsFrame frame;
 	private PrintWriter logfile;
 	private PrintWriter outfile;
 	private int logInterval;
+	private int numIntervals;
 	private int numFunEvals;
 	private int maxFunEvals;
 	private int lastPopFunEvals;
@@ -67,12 +71,13 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 			}
 		}	
 		this.logInterval = logInterval;
+		numIntervals = 0;
 		numFunEvals = 0;
 		lastPopFunEvals = 0;
 		this.maxFunEvals = maxFunEvals;
 		threadTerminator = tt;
 		if(frame != null) {
-			frame.addPropertyChangeListener(this);
+			frame.setLocationRelativeTo(null);
 		}	
 	}
 	
@@ -81,7 +86,7 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 		double avgFit = 0.0;
 		
 		/*
-		 * This section of code calculate the following:
+		 * This section of code calculates the following:
 		 *   smallestFit
 		 *   avgFit
 		 *   ...
@@ -275,6 +280,7 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 		}
 		if(numFunEvals >= logInterval) {
 			numFunEvals = 0;
+			numIntervals++;
 		}
 		
 //		System.out.println("Mutation Rate (" + population.getNumGenerations() + "): " + population.getMutationOperator().getMutationRate());
@@ -285,22 +291,44 @@ public class XTOOLSECMonitor implements ECMonitor, PropertyChangeListener {
 		return (frame != null);
 	}
 	
+	public int getNumFunctEval(){
+		return maxFunEvals;
+	}
+	
+	public int getCompFunctEval(){
+		return (logInterval*numIntervals)+numFunEvals;
+	}
+	
 	public void initialize() {
 		ecResult = new ECResult();
 		numFunEvals = 0;
 		lastPopFunEvals = 0;
-		frame.clearPoints();
+		if(frame != null) frame.clearPoints();
 	}
 	
+	public void endOptimization() {
+		threadTerminator.killThread = true;
+		if(logfile != null) {
+			logfile.close();
+		}
+		if(outfile != null) {
+			outfile.close();
+		}
+	}
+	/*
+	//This function is no longer needed, window can't be closed, event never fires.
 	public void propertyChange(PropertyChangeEvent event) {
 		if(event.getPropertyName().equals("WindowClosed")) {
-			threadTerminator.killThread = true;
-			if(logfile != null) {
-				logfile.close();
-			}
-			if(outfile != null) {
-				outfile.close();
-			}
+			endOptimization();
 		}
+	}
+	*/
+
+	public JFrame getFrame() {
+		return frame;
+	}
+
+	public ECResult getLastResult() {
+		return ecResult;
 	}
 }
