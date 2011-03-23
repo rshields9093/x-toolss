@@ -25,7 +25,7 @@
    import java.io.*;
 
 
-    public class XHelpFrame extends javax.swing.JFrame {
+    public class XHelpFrame extends JFrame {
     
        public XHelpFrame() {
          initComponents();

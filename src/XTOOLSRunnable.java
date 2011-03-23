@@ -32,6 +32,7 @@ public class XTOOLSRunnable extends Thread {
 	private ECMonitor ecMonitor;
 	private OnlineAdaptation onlineAdapt;
 	private int maxNumRuns;
+	private int numRuns = 0;
 	private ThreadTerminator threadTerminator;
 	private PrintWriter statfile;
 	private String statFilename;
@@ -60,9 +61,15 @@ public class XTOOLSRunnable extends Thread {
 		this.isDisplayed = isDisplayed;
 		onlineAdapt = null;
 	}
+	public int getNumRuns(){
+		return numRuns;
+	}
 	
+	public int getMaxNumRuns(){
+		return maxNumRuns;
+	}
 	public void run() {
-		int numRuns = 0;
+		numRuns = 0;
 		if(statFilename != null) {
 			try {
 				statfile = new PrintWriter(new FileOutputStream(statFilename));

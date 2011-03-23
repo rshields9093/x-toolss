@@ -30,6 +30,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.WindowListener;
 import java.awt.event.WindowEvent;
 import java.awt.geom.Point2D;
@@ -37,7 +39,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 
 
-public class XTOOLSResultsFrame extends JFrame implements ActionListener, WindowListener {
+public class XTOOLSResultsFrame extends JFrame implements ActionListener, WindowListener, ComponentListener {
 	private String bestIndividualInfo;
 	private String currentPopulationInfo;
 	private JTextArea textArea;
@@ -52,18 +54,21 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		textArea = new JTextArea();
 		textArea.setEditable(false);
 		mainPanel = new JPanel();
+		mainPanel.addComponentListener(this);
 		mainPanel.setLayout(new BorderLayout());
 		scrollPane = new JScrollPane(textArea,
 									JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
 									JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 		scrollPane.setVisible(true);
+		scrollPane.setMinimumSize(new Dimension(485, 430));
+		
 		mainPanel.add(scrollPane, BorderLayout.CENTER);
 		
 		graphCanvas = new GraphCanvas();
+		graphCanvas.setMinimumSize(new Dimension(485, 430));
 		
 		JPanel controlPanel = new JPanel();
 		controlPanel.setLayout(new BorderLayout());
-//		controlPanel.add(new JLabel("See Results"), BorderLayout.NORTH);
 		radioButton = new JRadioButton[3];
 		radioButton[0] = new JRadioButton("Convergence Graph");
 		radioButton[0].setActionCommand("Convergence Graph");
@@ -92,8 +97,10 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		addWindowListener(this); 
 		setTitle("X-TOOLSS Results");
 		setSize(500, 500);
-	 	setVisible(true);	
+	 	//setVisible(true);	
 	}
+	
+	
 	
 	public String getBestIndividualInfo() {
 		return bestIndividualInfo;
@@ -137,22 +144,24 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		if(e.getActionCommand().equals("Convergence Graph")) {
 			mainPanel.removeAll();
 			mainPanel.add(graphCanvas, BorderLayout.CENTER);
-			graphCanvas.setSize(new Dimension(485, 430));
-			repaint();
+			
+			pack();
 		}
 		else if(e.getActionCommand().equals("Generation Best Only")) {
 			textArea.setText(bestIndividualInfo);
 			textArea.setCaretPosition(textArea.getDocument().getLength());
 			mainPanel.removeAll();
+			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			repaint();
+			pack();
 		}
 		else if(e.getActionCommand().equals("Current Population")) {
 			textArea.setText(currentPopulationInfo);
 			textArea.setCaretPosition(0);
 			mainPanel.removeAll();
+			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			repaint();
+			pack();
 		}
 	}
 	
@@ -160,10 +169,10 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	public void windowClosed(WindowEvent e) {}
 	
 	public void windowClosing(WindowEvent e) {
-		radioButton[1].setSelected(true);
+		/*radioButton[1].setSelected(true);
 		bestIndividualInfo = "";
 		currentPopulationInfo = "";
-		firePropertyChange("WindowClosed", 0, 1);
+		firePropertyChange("WindowClosed", 0, 1);*/
 		setVisible(false);
 	}
 	public void windowActivated(WindowEvent e) {}
@@ -175,12 +184,44 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	public void windowIconified(WindowEvent e) {}
 	
 	public void windowOpened(WindowEvent e) {}
+
+
+
+	@Override
+	public void componentHidden(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public void componentMoved(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public void componentResized(ComponentEvent arg0) {
+		scrollPane.setPreferredSize(mainPanel.getSize());
+		graphCanvas.setPreferredSize(mainPanel.getSize());
+	}
+
+
+
+	@Override
+	public void componentShown(ComponentEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 	
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		XTOOLSResultsFrame window = new XTOOLSResultsFrame();
 		window.addPoint(new Point2D.Double(3.0, 140.0), Color.blue);
 		window.addPoint(new Point2D.Double(100.0, 40.0), Color.red);
-	}
+	}*/
 }
 

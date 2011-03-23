@@ -41,11 +41,12 @@
 	import java.awt.dnd.DropTargetListener;
 	import javax.swing.event.*;
 	import javax.swing.text.*; 
-	import edu.auburn.eng.aci.genevot.Chromosome;
+import edu.auburn.eng.aci.genevot.Chromosome;
 	
     class AppFile
    {
       private String filePath, fileName, directory;
+      private File xtsFile;
       private Vector modules;//for object
       private Vector genVec, aliases, constants;//from file
       float[] upperBounds, lowerBounds;
@@ -83,8 +84,9 @@
       }
       
        public void setFilePath(String path){
-         filePath = path;
-         setFileName();
+         /*filePath = path;
+         setFileName();*/
+         init(path);
       }
    
        public String getFilePath(){
@@ -94,15 +96,14 @@
        private void setFileName(){
          if(!filePath.equals("")){
             try {
-               File xtsFile = new File(filePath);
-               fileName = xtsFile.getName();
+               xtsFile = new File(filePath);
+               System.out.println(fileName = xtsFile.getName());
                directory = xtsFile.getParent();
-            }  
-                catch (Exception e) {  
-                  System.out.println("Error reading file " + filePath); 
-                  e.printStackTrace();
-                  fileName = "";
-               }
+            }catch (Exception e) {  
+               System.out.println("Error reading file " + filePath); 
+               e.printStackTrace();
+               fileName = "";
+            }
          	
             if(fileName.length()-4 >= 0){
                //fileName = fileName.substring(0, fileName.length()-4);
@@ -197,8 +198,8 @@
          if(modules.size() > 0){
             Module2 theMod = (Module2)modules.get(0);
          
-            File xtsF = new File(theMod.getFilePath());
-            directory = xtsF.getParent();
+            xtsFile = new File(theMod.getFilePath());
+            directory = xtsFile.getParent();
                         
             try {
                FileWriter fw = new FileWriter(directory+ File.separator +theMod.getInputFile());
@@ -303,6 +304,11 @@
 			           e.printStackTrace();
 			      }
 			 }
+		}
+
+
+		public File getFile() {
+			return xtsFile;
 		}
 	
    }
