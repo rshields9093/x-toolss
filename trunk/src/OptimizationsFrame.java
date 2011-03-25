@@ -15,7 +15,8 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 	JPanel optPanel;
 	JPanel filler;
 	JButton addOptButton;
-	GridBagLayout layout;
+	//GridBagLayout layout;
+	VerticalLayout layout;
 	GridBagConstraints c;
 	
 	String version = "1.3  (Alpha 1)";
@@ -29,7 +30,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		super();
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setSize(500,600);
-		setTitle("X-TOOLSS 1.3");
+		setTitle("X-TOOLSS "+version);
 		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);
 		
@@ -85,10 +86,9 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		
 		optPanel = new JPanel();
 		optPanel.setSize(optPanel.getMinimumSize());
-		c = new GridBagConstraints();
-		c.insets = new Insets(2,2,2,2);
 		
-		layout = new GridBagLayout();
+		//layout = new GridBagLayout();
+		layout = new VerticalLayout();
 		optPanel.setLayout(layout);
 		
 		scrollPane = new JScrollPane(optPanel);
@@ -118,17 +118,6 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 	}
 	
 	public void addOptimization(OptimizationPanel op){
-		//Setup the constrains for GridBagLayout
-		c.gridx = 0;
-		c.weightx = 1.0;
-		c.weighty = 1.0;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.anchor = GridBagConstraints.NORTH;
-		
-		//Implement constraints
-		layout.setConstraints(op, c);
-		
-		//Add to panel
 		optPanel.add(op);
 		optPanel.setSize(optPanel.getMinimumSize());
 		
