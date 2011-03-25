@@ -166,7 +166,9 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	}
 	
 	
-	public void windowClosed(WindowEvent e) {}
+	public void windowClosed(WindowEvent e) {
+		System.out.println("test");
+	}
 	
 	public void windowClosing(WindowEvent e) {
 		/*radioButton[1].setSelected(true);

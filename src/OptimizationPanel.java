@@ -1,3 +1,24 @@
+/*
+ * Copyright 2005 Mike Tinker, Gerry Dozier, Aaron Gerrett, Lauren Goff, 
+ * Mike SanSoucie, and Patrick Hull
+ * Copyright 2011 Joshua Adams
+ * 
+ * This file is part of X-TOOLSS.
+ *
+ * X-TOOLSS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * X-TOOLSS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +58,7 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		desc = new JLabel("Gathering Information...");
 		timeRemaining = new JLabel("");
 		progressBar = new JProgressBar();
-		btnVisible = new JButton("Show");
+		btnVisible = new JButton("Results");
 		btnStop = new JButton("Stop");
 		btnPauseResume = new JButton("Pause");
 		
@@ -45,12 +66,8 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(wizard.getCurrentFrame().isVisible()){
-					btnVisible.setText("Show");
-				}else{
-					btnVisible.setText("Hide");
-				}
-				wizard.getCurrentFrame().setVisible(!wizard.getCurrentFrame().isVisible());
+				wizard.getCurrentFrame().setExtendedState(JFrame.NORMAL);
+				wizard.getCurrentFrame().setVisible(true);
 			}
 			
 		});
