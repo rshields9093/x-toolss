@@ -19,12 +19,12 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.auburn.eng.aci.genevot.Interval;
-import edu.auburn.eng.aci.genevot.Population;
-import edu.auburn.eng.aci.genevot.MigrationOperator;
-import edu.auburn.eng.aci.genevot.Chromosome;
-import edu.auburn.eng.aci.genevot.Individual;
-import edu.auburn.eng.aci.genevot.Particle;
+import lib.genevot.Interval;
+import lib.genevot.Population;
+import lib.genevot.MigrationOperator;
+import lib.genevot.Chromosome;
+import lib.genevot.Individual;
+import lib.genevot.Particle;
 
 import java.util.Random;
 

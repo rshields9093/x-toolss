@@ -23,8 +23,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
-import javax.swing.border.Border;
-import edu.auburn.eng.aci.genevot.ECResult;
+
+import lib.genevot.ECResult;
+import lib.genevot.Population;
 
 public class OptimizationPanel extends JPanel implements ActionListener{
 	GUI10 wizard;
@@ -32,37 +33,57 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	
 	//Update panel on time interval
 	Timer t;
+	boolean isComplete = false;
+	boolean forceUpdate = true;
 	
 	int secondsPassed = 0;
+	int secondsRemaining = 0;
+	double percentComplete = 0.0;
 	GridBagLayout layout;
 	GridBagConstraints c;
 	JLabel desc;
 	JLabel timeRemaining;
 	JProgressBar progressBar;
-	JButton btnVisible;
+	JButton btnShow;
 	JButton btnStop;
 	JButton btnPauseResume;
-	OptimizationPanel(GUI10 w/*, OptimizationsFrame oFrame*/){
-		this.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
-		this.setBackground(new Color(220,220,220));
+	
+	OptimizationPanel(){
+		Color backgroundColor = new Color(173,194,255);
+		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		this.setBackground(backgroundColor);
 		this.setSize(getMinimumSize());
 		
 		layout = new GridBagLayout();
 		c = new GridBagConstraints();
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setBackground(backgroundColor);
+		c.insets = new Insets(3,3,3,3);
 		c.weightx = 1.0;
 		c.weighty = 1.0;
 		this.setLayout(layout);
-		
-		this.wizard = w;
-		//this.optFrame = oFrame;
+		wizard = new GUI10(this);
+		wizard.getExecuteButton().addActionListener(this);
 		desc = new JLabel("Gathering Information...");
 		timeRemaining = new JLabel("");
 		progressBar = new JProgressBar();
-		btnVisible = new JButton("Results");
+		btnShow = new JButton("Show");
 		btnStop = new JButton("Stop");
+		btnStop.setEnabled(false);
 		btnPauseResume = new JButton("Pause");
+		btnPauseResume.setEnabled(false);
 		
-		btnVisible.addActionListener(new ActionListener(){
+		buttonPanel.add(btnShow);
+		buttonPanel.add(btnPauseResume);
+		buttonPanel.add(btnStop);
+		
+		buttonPanel.setSize(buttonPanel.getMinimumSize());
+		
+		/*
+		 * Add listeners to buttons...
+		 */
+		
+		btnShow.addActionListener(new ActionListener(){
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -77,12 +98,57 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if(wizard.getThreadTerminator() != null){
-					wizard.getThreadTerminator().killThread = true;
-					remove();
+					if(wizard.getThreadTerminator().killThread){
+						remove();
+					}else{
+						int n = JOptionPane.showConfirmDialog(null,
+				                "Are you sure you wish to end this optimization?\n" +
+				                "You will not be able to resume it at a later time.",
+				                "End Optimization?",
+				                JOptionPane.YES_OPTION); 								
+						if (n == JOptionPane.YES_OPTION) {
+							t.stop();
+							timeRemaining.setText("Canceled");
+							wizard.getThreadTerminator().killThread = true;
+							btnStop.setText("Remove");
+							btnPauseResume.setEnabled(false);
+							progressBar.setEnabled(false);
+						}
+						
+					}
 				}
 			}
 			
 		});
+		
+		btnPauseResume.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Population p = wizard.getPopulation();
+				if(p != null){
+					if(p.getPaused()){
+						//Currently paused, needs to be started.
+						t.start();
+						p.setPaused(false);
+						progressBar.setEnabled(true);
+						btnPauseResume.setText("Pause");
+					}else{
+						//Currently started, needs to be paused.
+						t.stop();
+						progressBar.setEnabled(false);
+						timeRemaining.setText("Paused");
+						p.setPaused(true);
+						btnPauseResume.setText("Resume");
+					}
+				}
+			}
+			
+		});
+		
+		/*
+		 * Add components to panel...
+		 */
 		
 		c.gridwidth = 1;
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -91,7 +157,8 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		
 		c.gridx = 2;
 		c.gridwidth = 2;
-		c.anchor = GridBagConstraints.EAST;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.NORTHEAST;
 		layout.setConstraints(timeRemaining,c);
 		add(timeRemaining);
 		
@@ -102,59 +169,79 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		layout.setConstraints(progressBar, c);
 		add(progressBar);
 		
-		c.gridwidth = 1;
+		c.gridwidth = 3;
 		c.gridx = 1;
 		c.gridy = 2;
-		layout.setConstraints(btnVisible, c);
-		add(btnVisible);
-		
-		c.gridx = 2;
-		layout.setConstraints(btnPauseResume, c);
-		add(btnPauseResume);
-		
-		c.gridx = 3;
-		layout.setConstraints(btnStop, c);
-		add(btnStop);
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.SOUTHEAST;
+		layout.setConstraints(buttonPanel, c);
+		add(buttonPanel);
 		
 		t = new Timer(1000, this);
 		t.start();
 	}
 	private void remove(){
-		//optFrame.removeOptimization(this);
+		setVisible(false);
+		this.removeAll();
+		wizard.destroy();
+		result = null;
+		System.gc();
+	}
+	
+	private String getTimeRemaining(int s){
+		String sTimeRemaining = "";
+		int secondsRemaining = s;
+		int daysRemaining = secondsRemaining/86400;
+		secondsRemaining = secondsRemaining - (daysRemaining*86400);
+		int hoursRemaining = secondsRemaining/3600;
+		secondsRemaining = secondsRemaining - (hoursRemaining * 3600);
+		int minutesRemaining = secondsRemaining/60;
+		secondsRemaining = secondsRemaining - (minutesRemaining * 60);
+		
+		sTimeRemaining = "Time Remaining: "+daysRemaining+"d "+hoursRemaining+"h "+minutesRemaining+"m "+secondsRemaining+"s";
+		return sTimeRemaining;
 	}
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		
+	public void actionPerformed(ActionEvent e) {
 		//Handle timer event
 		if(wizard.hasStarted()){
 			secondsPassed++;
-			if(secondsPassed%10 == 0){
-				double numFunctionEvaluations = wizard.getNumFunctionEvaluations();
-				double maxFunctionEvaluations = wizard.getMaxFunctionEvaluations();
-				double percentComplete = (numFunctionEvaluations/maxFunctionEvaluations);
-				progressBar.setValue((int)(percentComplete*100));
-				String sTimeRemaining;
-				if(percentComplete != 0){
-					int secondsRemaining = (int)((secondsPassed/percentComplete)-secondsPassed);
-					if(secondsRemaining == 0){
-						sTimeRemaining = "Run Completed";
-					}else{
-						int daysRemaining = secondsRemaining/86400;
-						secondsRemaining = secondsRemaining - (daysRemaining*86400);
-						int hoursRemaining = secondsRemaining/3600;
-						secondsRemaining = secondsRemaining - (hoursRemaining * 3600);
-						int minutesRemaining = secondsRemaining/60;
-						secondsRemaining = secondsRemaining - (minutesRemaining * 60);
-						
-						sTimeRemaining = "Time Remaining: "+daysRemaining+"d "+hoursRemaining+"h "+minutesRemaining+"m "+secondsRemaining+"s";
-					}
-				}else{
-					sTimeRemaining = "Calculating Time...";
-				}
-				
-				timeRemaining.setText(sTimeRemaining);
-				desc.setText(wizard.application.getFile().getName());
+			if(forceUpdate){
+				//Will update even if the initial population has not been completed.
+				updateData();
+				forceUpdate = true;
 			}
+			updateComponents();
 		}
+	}
+	
+	private void updateComponents(){
+		String sTimeRemaining = "";
+		if(percentComplete == 0.0){
+			sTimeRemaining = "Calculating Time...";
+			btnStop.setEnabled(true);
+			btnPauseResume.setEnabled(true);
+		}else if(percentComplete >= 0.99){
+			btnStop.setText("Remove");
+			btnPauseResume.setEnabled(false);
+			sTimeRemaining = "Run Completed";
+			t.stop();
+		}else{
+			secondsRemaining = (int)((secondsPassed/percentComplete)-secondsPassed);
+			sTimeRemaining = getTimeRemaining(secondsRemaining);
+			btnStop.setEnabled(true);
+			btnPauseResume.setEnabled(true);
+		}
+		
+		timeRemaining.setText(sTimeRemaining);
+		desc.setText(wizard.application.getFile().getName());
+	}
+	
+	public synchronized void updateData() {
+		forceUpdate = false;
+		double numFunctionEvaluations = wizard.getNumFunctionEvaluations();
+		double maxFunctionEvaluations = wizard.getMaxFunctionEvaluations();
+		percentComplete = (numFunctionEvaluations/maxFunctionEvaluations);
+		progressBar.setValue((int)(percentComplete*100));
 	}
 }

@@ -23,7 +23,7 @@ import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.swing.JOptionPane;
-import edu.auburn.eng.aci.genevot.*;
+import lib.genevot.*;
 
 public class XTOOLSRunnable extends Thread {
 	private Population population;
@@ -87,6 +87,7 @@ public class XTOOLSRunnable extends Thread {
 			}		
 		}
 		while(!threadTerminator.killThread && numRuns < maxNumRuns) {
+			
 			ECResult result = null;
 			if(pso == null) {
 				ecMonitor.initialize();

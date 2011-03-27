@@ -19,7 +19,7 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.auburn.eng.aci.genevot.*;
+import lib.genevot.*;
 import java.util.Random;
 
 

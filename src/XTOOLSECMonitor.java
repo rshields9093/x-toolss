@@ -29,12 +29,16 @@ import java.awt.Color;
 
 import javax.swing.JFrame;
 
-import edu.auburn.eng.aci.genevot.*;
+import lib.genevot.*;
 
-
+/*
+ * The Population object of the genetic algorithm runs this every time it completes
+ * a function evaluation.  This is where you update the GUI and log files.
+ */
 public class XTOOLSECMonitor implements ECMonitor{
 	private ECResult ecResult;
 	private XTOOLSResultsFrame frame;
+	private OptimizationPanel optPanel;
 	private PrintWriter logfile;
 	private PrintWriter outfile;
 	private int logInterval;
@@ -42,10 +46,14 @@ public class XTOOLSECMonitor implements ECMonitor{
 	private int numFunEvals;
 	private int maxFunEvals;
 	private int lastPopFunEvals;
+	private boolean newBest = true;
 	private ThreadTerminator threadTerminator;
 	
-	public XTOOLSECMonitor(boolean showFrame, int logInterval, int maxFunEvals, ThreadTerminator tt, String logFilename, String outFilename) {
+	
+	
+	public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval, int maxFunEvals, ThreadTerminator tt, String logFilename, String outFilename) {
 		ecResult = new ECResult();
+		optPanel = op;
 		if(showFrame) {
 			frame = new XTOOLSResultsFrame();
 		}
@@ -273,10 +281,13 @@ public class XTOOLSECMonitor implements ECMonitor{
 				}
 				bestFit = best.getFitness();
 			}
-			frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + bestFitStr + "\n");
+			frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + bestFitStr + "\n", bestFit);
 			frame.setCurrentPopulationInfo(tempString);
 			frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
 			frame.addPoint(new Point2D.Double(population.getNumGenerations(), bestFit), Color.red);
+			if(optPanel != null){
+				optPanel.updateData();
+			}
 		}
 		if(numFunEvals >= logInterval) {
 			numFunEvals = 0;

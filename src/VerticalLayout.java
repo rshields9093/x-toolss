@@ -43,31 +43,6 @@ public class VerticalLayout implements LayoutManager {
     	vgap = vg;
     }
     
-    private void setSizes(Container parent) {
-        Dimension d = null;
-        preferredWidth = 0;
-        preferredHeight = 0;
-        minWidth = 0;
-        minHeight = 0;
-        
-        int numComps = parent.getComponentCount();
-        for (int i = 0; i < numComps; i++) {
-            Component c = parent.getComponent(i);
-            if (c.isVisible()) {
-                d = c.getPreferredSize();
-                preferredHeight += d.height;
-                if (i > 0) {
-                    preferredHeight += vgap;
-                } else {
-                    preferredWidth = d.width;
-                }
-                
-                minWidth = Math.max(c.getMinimumSize().width, minWidth);
-                minHeight = preferredHeight;
-            }
-        }
-    }
-
     /*
      * 
      * The following functions are required by LayoutManager...
@@ -88,9 +63,30 @@ public class VerticalLayout implements LayoutManager {
     }
 
     public Dimension preferredLayoutSize(Container parent) {
-        setSizes(parent);
+    	Dimension d = new Dimension(0,0);
+        preferredWidth = 0;
+        preferredHeight = 0;
+        minWidth = 0;
+        minHeight = 0;
+        
+        /*
+         * Loop through each component to find preferred/min width
+         */
+        int numComps = parent.getComponentCount();
+        for (int i = 0; i < numComps; i++) {
+            Component c = parent.getComponent(i);
+            if (c.isVisible()) {
+                d = c.getPreferredSize();
+                if (i == 0) {
+                    preferredWidth = d.width;
+                }
+                preferredHeight += (d.height + vgap);
+                minWidth = Math.max(c.getMinimumSize().width, minWidth);
+                minHeight = preferredHeight;
+            }
+        }
         Insets insets = parent.getInsets();
-        Dimension d = new Dimension(0, 0);
+        
         d.width = preferredWidth + insets.left + insets.right;
         d.height = preferredHeight + insets.top + insets.bottom;
         return d;

@@ -19,9 +19,9 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.auburn.eng.aci.genevot.EvaluationFunction;
-import edu.auburn.eng.aci.genevot.Chromosome;
-import edu.auburn.eng.aci.genevot.Interval;
+import lib.genevot.EvaluationFunction;
+import lib.genevot.Chromosome;
+import lib.genevot.Interval;
 
 
 public class XTOOLSEvaluationFunction implements EvaluationFunction {
