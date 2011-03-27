@@ -31,22 +31,22 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import edu.auburn.eng.aci.genevot.BLXCrossoverOperator;
-import edu.auburn.eng.aci.genevot.GaussianMutationOperator;
-import edu.auburn.eng.aci.genevot.GenerationalSelection;
-import edu.auburn.eng.aci.genevot.Interval;
-import edu.auburn.eng.aci.genevot.MuPlusLambdaSelection;
-import edu.auburn.eng.aci.genevot.MutationOperator;
-import edu.auburn.eng.aci.genevot.OneFifthRule;
-import edu.auburn.eng.aci.genevot.ParentSelection;
-import edu.auburn.eng.aci.genevot.ParticleSwarmOptimization;
-import edu.auburn.eng.aci.genevot.Population;
-import edu.auburn.eng.aci.genevot.RecombinationOperator;
-import edu.auburn.eng.aci.genevot.SteadyGenerationalSelection;
-import edu.auburn.eng.aci.genevot.SteadyStateSelection;
-import edu.auburn.eng.aci.genevot.SurvivorSelection;
-import edu.auburn.eng.aci.genevot.TournamentSelection;
-import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
+import lib.genevot.BLXCrossoverOperator;
+import lib.genevot.GaussianMutationOperator;
+import lib.genevot.GenerationalSelection;
+import lib.genevot.Interval;
+import lib.genevot.MuPlusLambdaSelection;
+import lib.genevot.MutationOperator;
+import lib.genevot.OneFifthRule;
+import lib.genevot.ParentSelection;
+import lib.genevot.ParticleSwarmOptimization;
+import lib.genevot.Population;
+import lib.genevot.RecombinationOperator;
+import lib.genevot.SteadyGenerationalSelection;
+import lib.genevot.SteadyStateSelection;
+import lib.genevot.SurvivorSelection;
+import lib.genevot.TournamentSelection;
+import lib.genevot.UniformCrossoverOperator;
 
 
 public class XTOOLSS {
@@ -275,7 +275,7 @@ public class XTOOLSS {
 		
 		 ThreadTerminator tt = new ThreadTerminator();
 		 MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numFunEvals, tt);
-		 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(displayGUI, logInterval, numFunEvals, tt, logFilename, outFilename);
+		 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(null, displayGUI, logInterval, numFunEvals, tt, logFilename, outFilename);
 		 XTOOLSMigrationOperator migOp = null;
 		 if(memespaceIP.length() > 0 && memespacePort > 0) {
 			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort, (float)migrationRate);

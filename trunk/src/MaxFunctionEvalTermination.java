@@ -19,8 +19,8 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.auburn.eng.aci.genevot.TerminationCriteria;
-import edu.auburn.eng.aci.genevot.Population;
+import lib.genevot.TerminationCriteria;
+import lib.genevot.Population;
 
 
 public class MaxFunctionEvalTermination implements TerminationCriteria {

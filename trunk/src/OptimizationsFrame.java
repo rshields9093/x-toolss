@@ -4,22 +4,16 @@ import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 
 import javax.swing.*;
 
 public class OptimizationsFrame extends JFrame implements WindowListener{
-	//Array list of Optimization Panels
-	ArrayList<OptimizationPanel> optPanelList = new ArrayList<OptimizationPanel>();
 	JScrollPane scrollPane;
 	JPanel optPanel;
-	JPanel filler;
 	JButton addOptButton;
-	//GridBagLayout layout;
 	VerticalLayout layout;
-	GridBagConstraints c;
 	
-	String version = "1.3  (Alpha 1)";
+	String version = "1.3  (Alpha 2)";
 	String webAddr = "http://nxt.ncat.edu/";
 	
 	JMenuBar menuBar; 
@@ -30,6 +24,8 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		super();
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setSize(500,600);
+		Dimension d = new Dimension(425,450);
+		setMinimumSize(d);
 		setTitle("X-TOOLSS "+version);
 		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);
@@ -43,7 +39,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				scrollPane.revalidate();
-				OptimizationPanel op = new OptimizationPanel(new GUI10());
+				OptimizationPanel op = new OptimizationPanel();
 				addOptimization(op);
 			}
         });
@@ -87,12 +83,10 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		optPanel = new JPanel();
 		optPanel.setSize(optPanel.getMinimumSize());
 		
-		//layout = new GridBagLayout();
 		layout = new VerticalLayout();
 		optPanel.setLayout(layout);
 		
 		scrollPane = new JScrollPane(optPanel);
-		//scrollPane.setAlignmentY(TOP_ALIGNMENT);
 		
 		addOptButton = new JButton("New Optimization");
 		addOptButton.addActionListener(new ActionListener(){
@@ -102,7 +96,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 				//Disable the button so multiple optimizations aren't clicked.
 				setEnabled(false);
 				scrollPane.revalidate();
-				OptimizationPanel op = new OptimizationPanel(new GUI10());
+				OptimizationPanel op = new OptimizationPanel();
 				addOptimization(op);
 				setEnabled(true);
 			}
@@ -122,12 +116,11 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		optPanel.setSize(optPanel.getMinimumSize());
 		
 		scrollPane.revalidate();
-		optPanelList.add(op);
+		//optPanelList.add(op);
 	}
 	
 	public void removeOptimization(OptimizationPanel op){
 		op.setVisible(false);
-		optPanelList.remove(op);
 		op = null;
 	}
 	

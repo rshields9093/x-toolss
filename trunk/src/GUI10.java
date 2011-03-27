@@ -67,28 +67,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.Timer;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import edu.auburn.eng.aci.genevot.*;
-import edu.auburn.eng.aci.genevot.BLXCrossoverOperator;
-import edu.auburn.eng.aci.genevot.GaussianMutationOperator;
-import edu.auburn.eng.aci.genevot.GenerationalSelection;
-import edu.auburn.eng.aci.genevot.Interval;
-import edu.auburn.eng.aci.genevot.MuPlusLambdaSelection;
-import edu.auburn.eng.aci.genevot.MutationOperator;
-import edu.auburn.eng.aci.genevot.OneFifthRule;
-import edu.auburn.eng.aci.genevot.ParentSelection;
-import edu.auburn.eng.aci.genevot.ParticleSwarmOptimization;
-import edu.auburn.eng.aci.genevot.Population;
-import edu.auburn.eng.aci.genevot.RecombinationOperator;
-import edu.auburn.eng.aci.genevot.SteadyGenerationalSelection;
-import edu.auburn.eng.aci.genevot.SteadyStateSelection;
-import edu.auburn.eng.aci.genevot.SurvivorSelection;
-import edu.auburn.eng.aci.genevot.TournamentSelection;
-import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
+import lib.genevot.*;
    
     
     public class GUI10 extends JFrame implements ActionListener, DropTargetListener
@@ -98,6 +83,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
     	Population population;
     	ParticleSwarmOptimization pso;
         XTOOLSECMonitor xtoolsECMon;
+        OptimizationPanel optPanel;
         XTOOLSRunnable ecThread;
         boolean hasStarted = false;
         
@@ -196,7 +182,8 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
         JMenuItem newFile, open, exitMenu;
         
         
-      public GUI10() {
+      public GUI10(OptimizationPanel op) {
+    	 optPanel = op;
          init();
       }
    
@@ -1134,10 +1121,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
                                     JOptionPane.ERROR_MESSAGE); 
             }
             else{
-//               pg3BG.add(gaEx);
-//               pg3.pack();
                pg1.setVisible(false);
-               //pg2.setVisible(false);
                pg3.setVisible(false);
                executeApp();
             }
@@ -1672,7 +1656,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
          outFilename = workingDir+File.separator+outFilename;
          String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
          statFilename = workingDir+File.separator+statFilename;
-         xtoolsECMon = new XTOOLSECMonitor(true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+         xtoolsECMon = new XTOOLSECMonitor(optPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
          currentFrame = xtoolsECMon.getFrame();
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
@@ -1762,8 +1746,7 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
 				mutationOp = edaOps;
 				recombinationOp = edaOps;
 	         }
-			 
-	         population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
+			 population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
 			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns.intValue(), tt, statFilename, true, oneFifthRule);
 			 ecThread.start();
 			 hasStarted = true;
@@ -2564,15 +2547,50 @@ import edu.auburn.eng.aci.genevot.UniformCrossoverOperator;
        public int getMaxFunctionEvaluations() {
 			return numEval.intValue();
 	   }
+       
+       public Population getPopulation(){
+    	   if(population != null) return population;
+    	   else return pso.getPopulation();
+       }
 
        public int getNumFunctionEvaluations() {
     	    int numEvals = 0;
     	    if(population != null){
     	    	numEvals = population.getNumFunctionEvaluations();
     	    }else{
-    	    	if(xtoolsECMon != null) numEvals = xtoolsECMon.getCompFunctEval()*popSize;
+    	    	if(pso != null){
+    	    		numEvals = pso.getPopulation().getNumFunctionEvaluations();
+    	    	}
     	    }
     	    return numEvals;
        }
+
+	public void destroy() {
+		if(pg1 != null){
+			pg1.setVisible(false);
+			pg1.removeAll();
+			pg1 = null;
+		}
+		if(pg3 != null){
+			pg3.setVisible(false);
+			pg3.removeAll();
+			pg3 = null;
+		}
+		if(error != null){
+			error.setVisible(false);
+			error.removeAll();
+			error = null;
+		}
+		if(currentFrame != null){
+			currentFrame.setVisible(false);
+			currentFrame.removeAll();
+			currentFrame = null;
+		}
+		System.gc();
+	}
+
+	public JButton getExecuteButton() {
+		return pg3Next;
+	}
 }
 	

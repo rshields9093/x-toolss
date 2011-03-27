@@ -41,7 +41,7 @@
 	import java.awt.dnd.DropTargetListener;
 	import javax.swing.event.*;
 	import javax.swing.text.*; 
-import edu.auburn.eng.aci.genevot.Chromosome;
+	import lib.genevot.Chromosome;
 	
     class AppFile
    {

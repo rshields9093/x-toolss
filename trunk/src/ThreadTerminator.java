@@ -21,8 +21,10 @@
 
 public class ThreadTerminator {
 	public boolean killThread;
+	public boolean pauseThread;
 	
 	public ThreadTerminator() {
 		killThread = false;
+		pauseThread = false;
 	}
 }

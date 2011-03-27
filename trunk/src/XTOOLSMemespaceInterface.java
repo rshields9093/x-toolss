@@ -19,9 +19,9 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import edu.auburn.eng.aci.genevot.Interval;
-import edu.auburn.eng.aci.genevot.Individual;
-import edu.auburn.eng.aci.memespace.MemespaceProtocol;
+import lib.genevot.Interval;
+import lib.genevot.Individual;
+//import lib.memespace.MemespaceProtocol;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.io.PrintWriter;

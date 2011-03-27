@@ -47,6 +47,7 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	private JRadioButton[] radioButton;
 	private GraphCanvas graphCanvas;
 	private JPanel mainPanel;
+	private double bestFit = Double.POSITIVE_INFINITY;
 	
 	public XTOOLSResultsFrame() {
 		bestIndividualInfo = "";
@@ -106,9 +107,13 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		return bestIndividualInfo;
 	}	
 	
-	public void setBestIndividualInfo(String info) {
-		bestIndividualInfo = info;
-		updateTextArea();
+	public void setBestIndividualInfo(String info, double fitness) {
+		if(fitness < bestFit){
+			bestFit = fitness;
+			bestIndividualInfo = info;
+			updateTextArea();
+		}
+		
 	}
 
 	public String getCurrentPopulationInfo() {
@@ -144,8 +149,8 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		if(e.getActionCommand().equals("Convergence Graph")) {
 			mainPanel.removeAll();
 			mainPanel.add(graphCanvas, BorderLayout.CENTER);
-			
-			pack();
+			mainPanel.revalidate();
+			mainPanel.repaint();
 		}
 		else if(e.getActionCommand().equals("Generation Best Only")) {
 			textArea.setText(bestIndividualInfo);
@@ -153,7 +158,8 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			pack();
+			mainPanel.revalidate();
+			mainPanel.repaint();
 		}
 		else if(e.getActionCommand().equals("Current Population")) {
 			textArea.setText(currentPopulationInfo);
@@ -161,7 +167,8 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			pack();
+			mainPanel.revalidate();
+			mainPanel.repaint();
 		}
 	}
 	
@@ -171,10 +178,6 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	}
 	
 	public void windowClosing(WindowEvent e) {
-		/*radioButton[1].setSelected(true);
-		bestIndividualInfo = "";
-		currentPopulationInfo = "";
-		firePropertyChange("WindowClosed", 0, 1);*/
 		setVisible(false);
 	}
 	public void windowActivated(WindowEvent e) {}
