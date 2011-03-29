@@ -41,7 +41,7 @@
 	import java.awt.dnd.DropTargetListener;
 	import javax.swing.event.*;
 	import javax.swing.text.*; 
-	import lib.genevot.Chromosome;
+import lib.genevot.Chromosome;
 	
     class AppFile
    {
@@ -309,6 +309,11 @@
 
 		public File getFile() {
 			return xtsFile;
+		}
+
+		public void setDirectory(String workingDir) {
+			// TODO Auto-generated method stub
+			xtsFile = new File(workingDir, xtsFile.getName());
 		}
 	
    }
