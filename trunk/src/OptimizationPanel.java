@@ -28,11 +28,15 @@ import lib.genevot.ECResult;
 import lib.genevot.Population;
 
 public class OptimizationPanel extends JPanel implements ActionListener{
-	GUI10 wizard;
+	JFrame resultsFrame;
+	XTOOLSECMonitor monitor;
+	ThreadTerminator tt;
+	Population population;
 	ECResult result;
+	int maxNumEvals;
 	
 	//Update panel on time interval
-	Timer t;
+	Timer timer;
 	boolean isComplete = false;
 	boolean forceUpdate = true;
 	
@@ -48,7 +52,12 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	JButton btnStop;
 	JButton btnPauseResume;
 	
-	OptimizationPanel(){
+	OptimizationPanel(XTOOLSECMonitor mon, ThreadTerminator threadTerm, Population p, String description, int evals, int runs){
+		monitor = mon;
+		tt = threadTerm;
+		timer = new Timer(1000, this);
+		population = p;
+		maxNumEvals = evals*runs;
 		Color backgroundColor = new Color(173,194,255);
 		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		this.setBackground(backgroundColor);
@@ -62,16 +71,12 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		c.weightx = 1.0;
 		c.weighty = 1.0;
 		this.setLayout(layout);
-		wizard = new GUI10(this);
-		wizard.getExecuteButton().addActionListener(this);
-		desc = new JLabel("Gathering Information...");
-		timeRemaining = new JLabel("");
+		desc = new JLabel(description);
+		timeRemaining = new JLabel("Calculating Time...");
 		progressBar = new JProgressBar();
 		btnShow = new JButton("Show");
 		btnStop = new JButton("Stop");
-		btnStop.setEnabled(false);
 		btnPauseResume = new JButton("Pause");
-		btnPauseResume.setEnabled(false);
 		
 		buttonPanel.add(btnShow);
 		buttonPanel.add(btnPauseResume);
@@ -87,8 +92,8 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				wizard.getCurrentFrame().setExtendedState(JFrame.NORMAL);
-				wizard.getCurrentFrame().setVisible(true);
+				monitor.getFrame().setExtendedState(JFrame.NORMAL);
+				monitor.getFrame().setVisible(true);
 			}
 			
 		});
@@ -97,8 +102,8 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(wizard.getThreadTerminator() != null){
-					if(wizard.getThreadTerminator().killThread){
+				if(tt != null){
+					if(tt.killThread){
 						remove();
 					}else{
 						int n = JOptionPane.showConfirmDialog(null,
@@ -107,9 +112,9 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 				                "End Optimization?",
 				                JOptionPane.YES_OPTION); 								
 						if (n == JOptionPane.YES_OPTION) {
-							t.stop();
+							timer.stop();
 							timeRemaining.setText("Canceled");
-							wizard.getThreadTerminator().killThread = true;
+							tt.killThread = true;
 							btnStop.setText("Remove");
 							btnPauseResume.setEnabled(false);
 							progressBar.setEnabled(false);
@@ -125,22 +130,23 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Population p = wizard.getPopulation();
-				if(p != null){
-					if(p.getPaused()){
+				if(population != null){
+					if(population.getPaused()){
 						//Currently paused, needs to be started.
-						t.start();
-						p.setPaused(false);
+						timer.start();
+						population.setPaused(false);
 						progressBar.setEnabled(true);
+						timeRemaining.setText("Resuming...");
 						btnPauseResume.setText("Pause");
 					}else{
 						//Currently started, needs to be paused.
-						t.stop();
+						timer.stop();
 						progressBar.setEnabled(false);
 						timeRemaining.setText("Paused");
-						p.setPaused(true);
+						population.setPaused(true);
 						btnPauseResume.setText("Resume");
 					}
+					updateComponents();
 				}
 			}
 			
@@ -177,13 +183,12 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		layout.setConstraints(buttonPanel, c);
 		add(buttonPanel);
 		
-		t = new Timer(1000, this);
-		t.start();
+		
+		timer.start();
 	}
 	private void remove(){
 		setVisible(false);
 		this.removeAll();
-		wizard.destroy();
 		result = null;
 		System.gc();
 	}
@@ -204,44 +209,36 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		//Handle timer event
-		if(wizard.hasStarted()){
-			secondsPassed++;
-			if(forceUpdate){
-				//Will update even if the initial population has not been completed.
-				updateData();
-				forceUpdate = true;
-			}
-			updateComponents();
+		secondsPassed++;
+		if(forceUpdate){
+			//Will update even if the initial population has not been completed.
+			updateData();
+			forceUpdate = true;
 		}
+		updateData();
+		updateComponents();
 	}
 	
 	private void updateComponents(){
 		String sTimeRemaining = "";
-		if(percentComplete == 0.0){
-			sTimeRemaining = "Calculating Time...";
-			btnStop.setEnabled(true);
-			btnPauseResume.setEnabled(true);
-		}else if(percentComplete >= 0.99){
+		if(percentComplete >= 0.995){
 			btnStop.setText("Remove");
 			btnPauseResume.setEnabled(false);
-			sTimeRemaining = "Run Completed";
-			t.stop();
+			timeRemaining.setText("Run Completed");
+			progressBar.setValue(100);
+			timer.stop();
 		}else{
-			secondsRemaining = (int)((secondsPassed/percentComplete)-secondsPassed);
-			sTimeRemaining = getTimeRemaining(secondsRemaining);
-			btnStop.setEnabled(true);
-			btnPauseResume.setEnabled(true);
+			if(secondsPassed%10 == 0 && percentComplete > 0){
+				secondsRemaining = (int)((secondsPassed/percentComplete)-secondsPassed);
+				sTimeRemaining = getTimeRemaining(secondsRemaining);
+				timeRemaining.setText(sTimeRemaining);
+			}
 		}
-		
-		timeRemaining.setText(sTimeRemaining);
-		desc.setText(wizard.application.getFile().getName());
 	}
 	
 	public synchronized void updateData() {
 		forceUpdate = false;
-		double numFunctionEvaluations = wizard.getNumFunctionEvaluations();
-		double maxFunctionEvaluations = wizard.getMaxFunctionEvaluations();
-		percentComplete = (numFunctionEvaluations/maxFunctionEvaluations);
+		percentComplete = ((double)population.getNumFunctionEvaluations()/maxNumEvals);
 		progressBar.setValue((int)(percentComplete*100));
 	}
 }

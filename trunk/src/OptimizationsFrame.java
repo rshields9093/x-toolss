@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.*;
 
-public class OptimizationsFrame extends JFrame implements WindowListener{
+public class OptimizationsFrame extends JFrame implements WindowListener, ActionListener{
 	JScrollPane scrollPane;
 	JPanel optPanel;
 	JButton addOptButton;
@@ -35,14 +35,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
         fileMenu = new JMenu("File");
         
         newOptMenu = new JMenuItem("New Optimization");
-        newOptMenu.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				scrollPane.revalidate();
-				OptimizationPanel op = new OptimizationPanel();
-				addOptimization(op);
-			}
-        });
+        newOptMenu.addActionListener(this);
         fileMenu.add(newOptMenu);
         
         exitMenu = new JMenuItem("Exit", KeyEvent.VK_T); 
@@ -89,19 +82,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		scrollPane = new JScrollPane(optPanel);
 		
 		addOptButton = new JButton("New Optimization");
-		addOptButton.addActionListener(new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				//Disable the button so multiple optimizations aren't clicked.
-				setEnabled(false);
-				scrollPane.revalidate();
-				OptimizationPanel op = new OptimizationPanel();
-				addOptimization(op);
-				setEnabled(true);
-			}
-			
-		});
+		addOptButton.addActionListener(this);
 		add(menuBar, BorderLayout.NORTH);
 		add(scrollPane, BorderLayout.CENTER);
 		add(addOptButton, BorderLayout.SOUTH);
@@ -114,9 +95,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 	public void addOptimization(OptimizationPanel op){
 		optPanel.add(op);
 		optPanel.setSize(optPanel.getMinimumSize());
-		
 		scrollPane.revalidate();
-		//optPanelList.add(op);
 	}
 	
 	public void removeOptimization(OptimizationPanel op){
@@ -168,6 +147,15 @@ public class OptimizationsFrame extends JFrame implements WindowListener{
 		if (n == JOptionPane.YES_OPTION) {
 			System.exit(0);
 		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		//New Optimization
+		//Disable the button so multiple optimizations aren't clicked.
+		setEnabled(false);
+		new GUI10(this);
+		setEnabled(true);
 	}
 	
 }

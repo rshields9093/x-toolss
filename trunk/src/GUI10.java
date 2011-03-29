@@ -40,9 +40,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -83,7 +87,8 @@ import lib.genevot.*;
     	Population population;
     	ParticleSwarmOptimization pso;
         XTOOLSECMonitor xtoolsECMon;
-        OptimizationPanel optPanel;
+        OptimizationsFrame optFrame;
+        OptimizationPanel tempOptPanel;
         XTOOLSRunnable ecThread;
         boolean hasStarted = false;
         
@@ -139,6 +144,7 @@ import lib.genevot.*;
         private JTextField pg1AddFile;
         private JList pg1Mod;
         DropTarget dt;
+        private String xtsDir, workingDir;
         private String fileName;
         private boolean isAdd = true;
         //----------------------------------------------------------------------
@@ -182,8 +188,8 @@ import lib.genevot.*;
         JMenuItem newFile, open, exitMenu;
         
         
-      public GUI10(OptimizationPanel op) {
-    	 optPanel = op;
+      public GUI10(OptimizationsFrame optimizationsFrame) {
+    	 optFrame = optimizationsFrame;
          init();
       }
    
@@ -803,6 +809,8 @@ import lib.genevot.*;
             if(isAdd && !(pg1AddFile.getText()).equals("")){
                if(xlsFiles.indexOf(pg1AddFile.getText()) < 0){
                   xlsFiles.add(fileCount, pg1AddFile.getText());
+                  xtsDir = (new File(pg1AddFile.getText())).getParent();
+                  //System.out.println(xtsDir);
                   fileCount++;
                   pg1Mod.setListData(xlsFiles);
                   pg1AddFile.setText("");
@@ -1123,7 +1131,7 @@ import lib.genevot.*;
             else{
                pg1.setVisible(false);
                pg3.setVisible(false);
-               executeApp();
+               for(int i = 0; i < numRuns; i++) executeApp();
             }
          }
 		 else if(e.getSource() == gaSelect) {
@@ -1579,15 +1587,135 @@ import lib.genevot.*;
       //**********************************************************************
        
    	
+       private String createWorkingDir(String curDir, String runsFolderName){
+    	   //Finds unique working directory name, creates working directory, and copies all 
+    	   //files/folders (except [runsFolerName]) into working dir.
+    	   //Returns working directory path.
+    	   File fWorkingDir, fXTSDir;
+    	   Calendar cal = Calendar.getInstance();
+    	   String dateStr = ""+cal.get(Calendar.YEAR)+String.format("%02d", (cal.get(Calendar.MONTH)+1))+String.format("%02d", cal.get(Calendar.DATE));
+    	   //System.out.println(curDir+File.separator+"X-TOOLSS_RUNS");
+    	   fXTSDir = new File(curDir);
+    	   String workingDirPath = curDir+File.separator+runsFolderName+File.separator;
+    	   boolean cont = true;
+		   int i = 1;
+		   while(cont){
+			   fWorkingDir = new File(workingDirPath+dateStr+"_"+String.format("%03d", i));
+			   if(!fWorkingDir.exists()){
+				   //If it doesn't exist, create the file and end the loop
+				   if(!fWorkingDir.mkdirs()){
+		    		   System.err.println("ERROR: Unable to create working directory.");
+		    	   }else{
+		    		   //Directorys created successfully.
+		    		   workingDirPath = workingDirPath+dateStr+"_"+String.format("%03d", i);
+		    	   }
+				   cont = false;
+			   }
+			   i++;
+		   }
+    	   
+		   //New directory created, need to get a list of files to copy.
+		   String[] files = fXTSDir.list();
+		   for(int fileIndex = 0; fileIndex < files.length; fileIndex++){
+			   //System.out.println(files[fileIndex]);
+			   //Copy each item (other than runs directory) to working directory
+			   if(!files[fileIndex].endsWith(runsFolderName)){
+				   //System.out.println(files[fileIndex]);
+				   File tempFile = new File(xtsDir, files[fileIndex]);
+				   if(tempFile.isDirectory()){
+					   copyDir(xtsDir, workingDirPath, files[fileIndex]);
+				   }else{
+					   copyFile(xtsDir, workingDirPath, files[fileIndex]);
+				   }
+			   }
+		   }
+		   
+		   return workingDirPath;
+       }
+       
+       private void copyDir(String fromDir, String toDir, String dirName){
+    	   //This function creates a new directory in [toDir] and copies all files to it.
+    	   String sOldDir = fromDir+File.separator+dirName;
+    	   String sNewDir = toDir+File.separator+dirName;
+    	   
+    	   File fNewDir = new File(sNewDir);
+    	   File fOldDir = new File(sOldDir);
+    	   if(!fNewDir.mkdirs()){
+    		   System.err.println("ERROR: Unable to create/copy directory from copyDir(...)");
+    	   }
+    	   
+    	   String[] files = fOldDir.list();
+		   for(int fileIndex = 0; fileIndex < files.length; fileIndex++){
+			   //Copy each item (other than runs directory) to working directory
+			   //System.out.println(files[fileIndex]);
+			   File tempFile = new File(sOldDir, files[fileIndex]);
+			   if(tempFile.isDirectory()){
+				   copyDir(sOldDir, sNewDir, files[fileIndex]);
+			   }else{
+				   copyFile(sOldDir, sNewDir, files[fileIndex]);
+			   }
+		   }
+       }
+       
+       private void copyFile(String fromDir, String toDir, String fileName){
+    	   //This function copies the [fileName] from [fromDir] to [toDir].
+    	   //This function will not work if [fileName] is a directory, displays error.
+    	   //System.out.println("Copying "+fromDir+" "+fileName+"  ->  "+toDir+" "+fileName);
+    	   File fromFile = new File(fromDir, fileName);
+    	   File toFile = new File(toDir, fileName);
+    	   
+    	   FileInputStream from = null;
+    	   FileOutputStream to = null;
+    	   
+    	   try {
+    		   from = new FileInputStream(fromFile);
+    		   to = new FileOutputStream(toFile);
+    		   byte[] buffer = new byte[4096];
+    		   int bytesRead = from.read(buffer);
+    		   while (bytesRead != -1){
+    			   to.write(buffer, 0, bytesRead);
+    			   bytesRead = from.read(buffer);
+    		   }
+    		   
+    		   from.close();
+        	   to.close();
+    	   }catch(Exception e){
+    		   System.err.println(e);
+    	   }
+       }
+       
        private void executeApp(){
-         application.setModuleArray(modules);
+    	   /*
+    	    * This function executes a single independent optimization.
+    	    */
+    	 workingDir = createWorkingDir(xtsDir, "X-TOOLSS_RUNS");
+    	 Module2 oldMod = (Module2) modules.get(0);
+    	 
+    	 //Copy the original module file
+    	 Module2 newMod = (Module2)oldMod.clone();
+    	 
+    	 //Change the path of the module file to the working directory
+    	 newMod.setFilePath(workingDir+File.separator+oldMod.getFileName());
+    	 
+    	 //Create a new vector to be compatible.
+    	 /*
+    	  * I don't think vectors are needed because an a problem is only
+    	  * related to one xts file, but further research is needed to verify
+    	  * this.  To stay compatible, the new module is added to a vector.
+    	  */
+    	 Vector<Module2> newModules = new Vector();
+    	 newModules.add(newMod);
+    	 
+    	 
+    	 application = new AppFile();
+         application.setModuleArray(newModules);
          application.setGeneticRep(geneticLoc);
          application.setConstantVector(isConstant);
          application.setAliasVector(isAlias);
        
          String temp, r1, r2;
-         Vector varValues = ((Module2)modules.get(0)).inputVarValues;
-         Vector varTypes = ((Module2)modules.get(0)).getInputVariableTypes();
+         Vector varValues = ((Module2)newModules.get(0)).inputVarValues;
+         Vector varTypes = ((Module2)newModules.get(0)).getInputVariableTypes();
          Vector lowBounds = new Vector();
          Vector upBounds = new Vector();
          for(int i = 0; i < varValues.size(); i++){	         
@@ -1603,7 +1731,7 @@ import lib.genevot.*;
             upBounds.add(r2);
          }
             	
-         application.setLowerBounds(lowBounds);  
+         application.setLowerBounds(lowBounds);
          application.setUpperBounds(upBounds);
 		 Interval[] interval = new Interval[lowBounds.size()];
 		 boolean canUsePSO = true;
@@ -1642,22 +1770,24 @@ import lib.genevot.*;
 				maxForPSO[i] = max;
 			}
          }
-
+         
+         
 		 tt = new ThreadTerminator();
          String gaName = (String)gaSelect.getSelectedItem();
          XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
          MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numEval.intValue(), tt);
          boolean shouldLog = !logFileName.equalsIgnoreCase("");
          File xtsFile = new File((String) xlsFiles.get(0));
-         String workingDir = xtsFile.getParent();
+         
 		 String logFilename = (shouldLog)? logFileName + ".log" : "xtoolss.log";
 		 logFilename = workingDir+File.separator+logFilename;
          String outFilename = (shouldLog)? logFileName + ".out" : "xtoolss.out";
          outFilename = workingDir+File.separator+outFilename;
          String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
          statFilename = workingDir+File.separator+statFilename;
-         xtoolsECMon = new XTOOLSECMonitor(optPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+         xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
          currentFrame = xtoolsECMon.getFrame();
+         
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
 			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort.intValue(), migrationRate.floatValue());
@@ -1747,22 +1877,25 @@ import lib.genevot.*;
 				recombinationOp = edaOps;
 	         }
 			 population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
-			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns.intValue(), tt, statFilename, true, oneFifthRule);
+			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, 1/*numRuns.intValue()*/, tt, statFilename, true, oneFifthRule);
 			 ecThread.start();
 			 hasStarted = true;
+			 tempOptPanel = new OptimizationPanel(xtoolsECMon, tt, population, newMod.getFileName(), numEval.intValue(), 1/*numRuns.intValue()*/);
 		 }
 		 else {
 			if(canUsePSO) {
 	            boolean useCC = (constCoeff.intValue() > 0)? true : false;
 	            pso = new ParticleSwarmOptimization(popSize.intValue(), neighborhoodSize.intValue(), minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
-				ecThread = new XTOOLSRunnable(pso, numRuns.intValue(), tt, statFilename, true);
+				ecThread = new XTOOLSRunnable(pso, 1/*numRuns.intValue()*/, tt, statFilename, true);
 				ecThread.start();
 				hasStarted = true;
+				tempOptPanel = new OptimizationPanel(xtoolsECMon, tt, pso.getPopulation(), newMod.getFileName(), numEval.intValue(), 1/*numRuns.intValue()*/);
 			}
 			else {
 				JOptionPane.showMessageDialog(null, "You must have only float or double inputs to use PSO.");
 			}
          }
+         optFrame.addOptimization(tempOptPanel);
       }
    	   
        private void updateParameter(String gaName, int selIndex, String text) {
@@ -2543,10 +2676,6 @@ import lib.genevot.*;
        public XTOOLSECMonitor getMonitor(){
     	   return xtoolsECMon;
        }
-
-       public int getMaxFunctionEvaluations() {
-			return numEval.intValue();
-	   }
        
        public Population getPopulation(){
     	   if(population != null) return population;
@@ -2555,11 +2684,12 @@ import lib.genevot.*;
 
        public int getNumFunctionEvaluations() {
     	    int numEvals = 0;
+    	    int numRunsCompleted = numEval.intValue() * ecThread.getNumRuns();
     	    if(population != null){
-    	    	numEvals = population.getNumFunctionEvaluations();
+    	    	numEvals = population.getNumFunctionEvaluations() + numRunsCompleted;
     	    }else{
     	    	if(pso != null){
-    	    		numEvals = pso.getPopulation().getNumFunctionEvaluations();
+    	    		numEvals = pso.getPopulation().getNumFunctionEvaluations() + numRunsCompleted;
     	    	}
     	    }
     	    return numEvals;

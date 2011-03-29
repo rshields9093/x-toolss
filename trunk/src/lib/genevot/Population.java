@@ -260,7 +260,7 @@ public class Population implements Cloneable {
 			if(oa != null) {
 				oa.adaptMutation(this, parent, child);
 			}
-			numFunctionEvaluations += numEvaluations;
+			//numFunctionEvaluations += numEvaluations;
 			individual = survivorSelection.selectSurvivors(this, parent, child);
 			individual = migrationOperator.migrate(this, individual);
 			result = ecMon.getResults(this, parent, child);

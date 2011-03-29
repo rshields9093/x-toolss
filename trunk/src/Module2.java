@@ -39,7 +39,7 @@
    import java.awt.dnd.DropTargetListener;
    
    import javax.swing.event.*;
-   import javax.swing.text.*; 
+import javax.swing.text.*; 
 	
 	//**********************************************************************
    //
@@ -47,7 +47,7 @@
    //
    //  This class reads the input file (.xts).
    //**********************************************************************
-    class Module2
+    class Module2 implements Cloneable
    {
       static final int maxVarLength = 25;
       static final String comment = "#";
@@ -69,6 +69,14 @@
     	   //existing module
          init(file);  
       }
+       
+       protected Object clone(){
+    	   try{
+    		   return super.clone();
+    	   }catch(Exception e){
+    		   return null;
+    	   }
+       }
    
        public void reset(){
          filePath = ""; 
