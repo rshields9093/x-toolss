@@ -1663,48 +1663,51 @@ import lib.genevot.*;
     	   //This function copies the [fileName] from [fromDir] to [toDir].
     	   //This function will not work if [fileName] is a directory, displays error.
     	   //System.out.println("Copying "+fromDir+" "+fileName+"  ->  "+toDir+" "+fileName);
-    	   /*File fromFile = new File(fromDir, fileName);
-    	   File toFile = new File(toDir, fileName);
-    	   
-    	   FileInputStream from = null;
-    	   FileOutputStream to = null;
-    	   
-    	   try {
-    		   from = new FileInputStream(fromFile);
-    		   to = new FileOutputStream(toFile);
-    		   byte[] buffer = new byte[4096];
-    		   int bytesRead = from.read(buffer);
-    		   while (bytesRead != -1){
-    			   to.write(buffer, 0, bytesRead);
-    			   bytesRead = from.read(buffer);
-    		   }
-    		   
-    		   from.close();
-        	   to.close();
-    	   }catch(Exception e){
-    		   System.err.println(e);
-    	   }*/
-    	   try{
-    		   String[] cmd = new String[3];
-    		   cmd[0] = "cp";
-    		   cmd[1] = fromDir+File.separator+fileName;
-    		   cmd[2] = toDir+File.separator+fileName;
-    		   Runtime rt = Runtime.getRuntime();
-    		   Process proc = rt.exec(cmd);
-               InputStream stderr = proc.getErrorStream();
-               InputStreamReader isr = new InputStreamReader(stderr);
-               BufferedReader br = new BufferedReader(isr);
-               int exitVal = proc.waitFor();
-               if(exitVal != 0){
-	               String line = null;
-	               System.out.println("<ERROR>");
-	               while ( (line = br.readLine()) != null)
-	                   System.out.println(line);
-	               System.out.println("</ERROR>");
-	               System.out.println("Process exitValue: " + exitVal);
-               }
-    	   }catch(Exception e){
-    		   System.err.println("Error: "+e);
+    	   if(System.getProperty("os.name").startsWith("Windows")){
+	    	   File fromFile = new File(fromDir, fileName);
+	    	   File toFile = new File(toDir, fileName);
+	    	   
+	    	   FileInputStream from = null;
+	    	   FileOutputStream to = null;
+	    	   
+	    	   try {
+	    		   from = new FileInputStream(fromFile);
+	    		   to = new FileOutputStream(toFile);
+	    		   byte[] buffer = new byte[4096];
+	    		   int bytesRead = from.read(buffer);
+	    		   while (bytesRead != -1){
+	    			   to.write(buffer, 0, bytesRead);
+	    			   bytesRead = from.read(buffer);
+	    		   }
+	    		   
+	    		   from.close();
+	        	   to.close();
+	    	   }catch(Exception e){
+	    		   System.err.println(e);
+	    	   }
+    	   }else{
+	    	   try{
+	    		   String[] cmd = new String[3];
+	    		   cmd[0] = "cp";
+	    		   cmd[1] = fromDir+File.separator+fileName;
+	    		   cmd[2] = toDir+File.separator+fileName;
+	    		   Runtime rt = Runtime.getRuntime();
+	    		   Process proc = rt.exec(cmd);
+	               InputStream stderr = proc.getErrorStream();
+	               InputStreamReader isr = new InputStreamReader(stderr);
+	               BufferedReader br = new BufferedReader(isr);
+	               int exitVal = proc.waitFor();
+	               if(exitVal != 0){
+		               String line = null;
+		               System.out.println("<ERROR>");
+		               while ( (line = br.readLine()) != null)
+		                   System.out.println(line);
+		               System.out.println("</ERROR>");
+		               System.out.println("Process exitValue: " + exitVal);
+	               }
+	    	   }catch(Exception e){
+	    		   System.err.println("Error: "+e);
+	    	   }
     	   }
        }
        
@@ -1801,7 +1804,7 @@ import lib.genevot.*;
          XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
          MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numEval.intValue(), tt);
          boolean shouldLog = !logFileName.equalsIgnoreCase("");
-         File xtsFile = new File((String) xlsFiles.get(0));
+         //File xtsFile = new File((String) xlsFiles.get(0));
          
 		 String logFilename = (shouldLog)? logFileName + ".log" : "xtoolss.log";
 		 logFilename = workingDir+File.separator+logFilename;
