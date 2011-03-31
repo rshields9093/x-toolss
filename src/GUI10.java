@@ -45,6 +45,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -1661,7 +1663,7 @@ import lib.genevot.*;
     	   //This function copies the [fileName] from [fromDir] to [toDir].
     	   //This function will not work if [fileName] is a directory, displays error.
     	   //System.out.println("Copying "+fromDir+" "+fileName+"  ->  "+toDir+" "+fileName);
-    	   File fromFile = new File(fromDir, fileName);
+    	   /*File fromFile = new File(fromDir, fileName);
     	   File toFile = new File(toDir, fileName);
     	   
     	   FileInputStream from = null;
@@ -1681,6 +1683,28 @@ import lib.genevot.*;
         	   to.close();
     	   }catch(Exception e){
     		   System.err.println(e);
+    	   }*/
+    	   try{
+    		   String[] cmd = new String[3];
+    		   cmd[0] = "cp";
+    		   cmd[1] = fromDir+File.separator+fileName;
+    		   cmd[2] = toDir+File.separator+fileName;
+    		   Runtime rt = Runtime.getRuntime();
+    		   Process proc = rt.exec(cmd);
+               InputStream stderr = proc.getErrorStream();
+               InputStreamReader isr = new InputStreamReader(stderr);
+               BufferedReader br = new BufferedReader(isr);
+               int exitVal = proc.waitFor();
+               if(exitVal != 0){
+	               String line = null;
+	               System.out.println("<ERROR>");
+	               while ( (line = br.readLine()) != null)
+	                   System.out.println(line);
+	               System.out.println("</ERROR>");
+	               System.out.println("Process exitValue: " + exitVal);
+               }
+    	   }catch(Exception e){
+    		   System.err.println("Error: "+e);
     	   }
        }
        
