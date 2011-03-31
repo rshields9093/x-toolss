@@ -149,8 +149,9 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		if(e.getActionCommand().equals("Convergence Graph")) {
 			mainPanel.removeAll();
 			mainPanel.add(graphCanvas, BorderLayout.CENTER);
-			mainPanel.revalidate();
-			mainPanel.repaint();
+			//mainPanel.revalidate();
+			//mainPanel.repaint();
+			//graphCanvas.repaint();
 		}
 		else if(e.getActionCommand().equals("Generation Best Only")) {
 			textArea.setText(bestIndividualInfo);
@@ -158,8 +159,8 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			mainPanel.revalidate();
-			mainPanel.repaint();
+			//mainPanel.revalidate();
+			//mainPanel.repaint();
 		}
 		else if(e.getActionCommand().equals("Current Population")) {
 			textArea.setText(currentPopulationInfo);
@@ -167,9 +168,11 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			mainPanel.revalidate();
-			mainPanel.repaint();
+			//mainPanel.revalidate();
+			//mainPanel.repaint();
 		}
+		validate();
+		mainPanel.repaint();
 	}
 	
 	

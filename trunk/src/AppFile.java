@@ -242,7 +242,7 @@ import lib.genevot.Chromosome;
 				}
 			}
 			catch(Exception e) {
-				System.out.println(e);
+				System.err.println("Error executing code file: "+e);
 			}
 			
 			 
