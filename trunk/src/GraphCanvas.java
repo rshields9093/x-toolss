@@ -43,6 +43,36 @@ import java.awt.event.*;
 
 public class GraphCanvas extends JPanel implements MouseListener, MouseMotionListener {
 
+	private static final Color DEFAULT_COLOR = Color.black;
+	private double ZOOM_STEP = 2.0;
+	private double TRANSLATE_X_STEP = 1.0;
+	private double TRANSLATE_Y_STEP = 1.0;
+	private static final double POINT_SIZE = 5.0;
+	private static final double	TICK_SIZE = 10.0;
+	private double garrett;
+	private double xMin;
+	private double xMax;
+	private double yMin;
+	private double yMax;
+	private boolean interactive;
+	private TranslateHorizontalAction translateRightAction;
+	private TranslateHorizontalAction translateLeftAction;
+	private TranslateVerticalAction translateUpAction;
+	private TranslateVerticalAction translateDownAction;
+	private final JPopupMenu pop = new JPopupMenu();
+	private JMenuItem item = new JMenuItem();
+	private int maxGenerations;
+	private double xRes;
+	private double yRes;
+	private Point2D.Double panelCenter;
+	private Point2D.Double graphOrigin;
+	private Vector<GraphPoint> points;
+	private boolean drawZoomBox = false;
+	private int zoomBoxStartX = 0;
+	private int zoomBoxStartY = 0;
+	private int zoomBoxEndX = 0;
+	private int zoomBoxEndY = 0;
+	
 	class TranslateHorizontalAction extends AbstractAction {
 		private double translate_step = 1.0;
 		public void actionPerformed(ActionEvent e) {
@@ -62,34 +92,6 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 			translate_step = s;
 		}
 	}
-
-	private static final Color DEFAULT_COLOR = Color.black;
-	
-	private double ZOOM_STEP = 2.0;
-	private double TRANSLATE_X_STEP = 1.0;
-	private double TRANSLATE_Y_STEP = 1.0;
-	private static final double POINT_SIZE = 5.0;
-	private static final double	TICK_SIZE = 10.0;
-	private double garrett;
-	private double xMin;
-	private double xMax;
-	private double yMin;
-	private double yMax;
-	private boolean interactive;
-	private TranslateHorizontalAction translateRightAction;
-	private TranslateHorizontalAction translateLeftAction;
-	private TranslateVerticalAction translateUpAction;
-	private TranslateVerticalAction translateDownAction;
-	private final JPopupMenu pop = new JPopupMenu();
-	private JMenuItem item = new JMenuItem();
-
-	
-	private double xRes;
-	private double yRes;
-	private Point2D.Double panelCenter;
-	private Point2D.Double graphOrigin;
-	
-	private Vector<GraphPoint> points;
 	
 	public GraphCanvas() {
 		this(-100.0, 1000.0, -100.0, 1000.0);
@@ -97,7 +99,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 
 	public GraphCanvas(double xMin, double xMax, double yMin, double yMax) {
 		this.setPreferredSize(new Dimension(485,430));
-		this.interactive = true;
+		this.interactive = false;
 		this.xMin = xMin;
 		this.xMax = xMax;
 		this.yMin = yMin;
@@ -111,12 +113,14 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 		
 		Action zoomInAction = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
+				//interactive = true;
 				zoom(1.0 / ZOOM_STEP);
 			}
 		};		
 
 		Action zoomOutAction = new AbstractAction() {
 			public void actionPerformed(ActionEvent e) {
+				//interactive = true;
 				zoom(ZOOM_STEP);
 			}
 		};		
@@ -154,14 +158,16 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 		getActionMap().put("reset", resetToOriginAction);
 		
 		pop.add(item);
+		
+		TRANSLATE_X_STEP = (xMax - xMin) / 10.0;
+		TRANSLATE_Y_STEP = (yMax - yMin) / 10.0;
 	}
 	
 	private double[] calculateBounds() {
-		double[] bounds = new double[4];
-		if(points.size() == 0) {
+		if(points.size() == 0){
 			return null;
-		}
-		else {
+		}else{
+			double[] bounds = new double[4];
 			bounds[0] = bounds[1] = points.get(0).coordinate.x;
 			bounds[2] = bounds[3] = points.get(0).coordinate.y;
 			for(int i = 1; i < points.size(); i++) {
@@ -178,6 +184,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 					bounds[3] = points.get(i).coordinate.y;
 				}
 			}
+			if(bounds[1] < 500) bounds[1] = 500;
 			return bounds;
 		}
 	}
@@ -185,10 +192,12 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	private void calculateProperties() {
 		double w = (double)this.getWidth();
 		double h = (double)this.getHeight();
-		double[] bounds = (interactive)? null : calculateBounds();
+		double[] bounds = calculateBounds();
 		double percent = 0.1;
-		if(bounds != null) {
-			garrett = bounds[1];
+		//if(bounds != null) garrett = bounds[1];
+		
+		if(!interactive && bounds != null) {
+			
 			xMin = bounds[0] - (bounds[1] - bounds[0]) * 0.2;
 			xMax = bounds[1] + (bounds[1] - bounds[0]) * 0.1;
 			double range = Math.abs(bounds[3] - bounds[2]);
@@ -218,6 +227,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 		panelCenter.y = (double)this.getY() + h / 2.0;
 		graphOrigin.x = panelCenter.x - (xMax + xMin) / 2.0 * xRes;
 		graphOrigin.y = panelCenter.y + (yMax + yMin) / 2.0 * yRes;
+		//zoom(1.0);
 	}
 	
 	private Point2D.Double convertToGraph(double x, double y) {
@@ -237,6 +247,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}
 	
 	public void zoom(double zoomFactor) {
+		interactive = true;
 		Point2D.Double center = new Point2D.Double((xMax + xMin)/2.0, (yMax + yMin)/2.0);
 		Point2D.Double upperLeft = new Point2D.Double(xMin - center.x, yMax - center.y);
 		Point2D.Double lowerRight = new Point2D.Double(xMax - center.x, yMin - center.y);
@@ -250,11 +261,13 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}
 	
 	public void translate(double xAmount, double yAmount) {
+		interactive = true;
 		setGraphBounds(xMin + xAmount, xMax + xAmount, yMin + yAmount, yMax + yAmount);
 	}
 	
 	public void resetToOrigin() {
-		setGraphBounds(-100.0, 1000.0, -100.0, 1000.0);	
+		setGraphBounds(-100.0, 1000.0, -100.0, 1000.0);
+		interactive = false;
 	}
 	
 	public void setGraphBounds(double xMin, double xMax, double yMin, double yMax) {
@@ -277,7 +290,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	
 	public void clearPoints() {
 		points.clear();
-		interactive = true;
+		interactive = false;
 		repaint();
 	}
 	
@@ -287,7 +300,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	
 	public void addPoint(Point2D.Double p, Color c) {
 		points.add(new GraphPoint(p, c));
-		interactive = false;
+		//interactive = false;
 		repaint();
 	}
 	
@@ -317,6 +330,8 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}
 	
 	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		//System.out.println("Starting paint...");
 		calculateProperties();
 		double w = (double)this.getWidth();
 		double h = (double)this.getHeight();
@@ -338,9 +353,13 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 		Point2D.Double labelPoint;
 		DecimalFormat yDecFormat = new DecimalFormat("#0.0#");
 		DecimalFormat xDecFormat = new DecimalFormat("#0.#");
-		while(!badHigh || !badLow) {
+		
+		//System.out.println("Starting drawing ticks...");
+		int tickCounter = 0;
+		while((!badHigh || !badLow) && tickCounter < 100) {
+			tickCounter++;
 			currX = graphOrigin.x - (double)tickMark * xRes;
-			if(currX > 0) {
+			if(currX > 0 && !badLow) {
 				g2D.draw(new Line2D.Double(currX, currY - TICK_SIZE / 2.0, currX, currY + TICK_SIZE / 2.0));
 				labelPoint = convertToGraph(currX, 0.0);
 				Rectangle2D rec = g2D.getFontMetrics().getStringBounds(xDecFormat.format(labelPoint.x), g2D);
@@ -353,7 +372,7 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 				badLow = true;
 			}
 			currX = graphOrigin.x + (double)tickMark * xRes;
-			if(currX < w) {
+			if(currX < w && !badHigh) {
 				g2D.draw(new Line2D.Double(currX, currY - TICK_SIZE / 2.0, currX, currY + TICK_SIZE / 2.0));
 				labelPoint = convertToGraph(currX, 0.0);
 				Rectangle2D rec = g2D.getFontMetrics().getStringBounds(xDecFormat.format(labelPoint.x), g2D);
@@ -367,13 +386,18 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 			}
 			tickMark += xTickWidth;
 		}
+		
+		//System.out.println("Finished with x ticks...");
 		currX = graphOrigin.x;
 		badHigh = false;
 		badLow = false;
 		tickMark = yTickWidth;
-		while(!badHigh || !badLow) {
-			currY = graphOrigin.y - (double)tickMark * yRes;
-			if(currY > 0) {
+		tickCounter = 0;
+		while((!badHigh || !badLow) && tickCounter < 100) {
+			tickCounter++;
+			currY = graphOrigin.y - ((double)tickMark * yRes);
+			//System.out.println("tickMark: "+tickMark+"    yRes: "+yRes+"    currY: "+currY);
+			if(currY > 0 && !badLow) {
 				g2D.draw(new Line2D.Double(currX - TICK_SIZE / 2.0, currY, currX + TICK_SIZE / 2.0, currY));
 				labelPoint = convertToGraph(0.0, currY);
 				Rectangle2D rec = g2D.getFontMetrics().getStringBounds(yDecFormat.format(labelPoint.y), g2D);
@@ -385,8 +409,8 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 			else {
 				badLow = true;
 			}
-			currY = graphOrigin.y + (double)tickMark * yRes;
-			if(currY < h) {
+			currY = graphOrigin.y + ((double)tickMark * yRes);
+			if(currY < h && !badHigh) {
 				g2D.draw(new Line2D.Double(currX - TICK_SIZE / 2.0, currY, currX + TICK_SIZE / 2.0, currY));
 				labelPoint = convertToGraph(0.0, currY);
 				Rectangle2D rec = g2D.getFontMetrics().getStringBounds(yDecFormat.format(labelPoint.y), g2D);
@@ -400,13 +424,14 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 			}
 			tickMark += yTickWidth;
 		}
-		
+		//System.out.println("Finished drawing ticks...");
+		//System.out.println("Starting drawing points...");
 		for(int i = 0; i < points.size(); i++) {
 			Point2D.Double p = convertToPanel(points.elementAt(i).coordinate);
 			g2D.setColor(points.elementAt(i).color);
-			g2D.fill(new Ellipse2D.Double(p.x, p.y, POINT_SIZE, POINT_SIZE));
+			g2D.fill(new Ellipse2D.Double(p.x-((double)POINT_SIZE/2), p.y-((double)POINT_SIZE/2), POINT_SIZE, POINT_SIZE));
 		}
-		
+		//System.out.println("Finished drawing points...");
 		g2D.setColor(Color.black);
 		if(garrett < Double.POSITIVE_INFINITY) {
 			String s = "Generation " + String.valueOf((int)garrett);
@@ -414,7 +439,23 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 			double stringWidth = rec.getWidth();
 			double stringHeight = rec.getHeight();
 			g2D.drawString(s, (float)(this.getX() + w - stringWidth), (float)(this.getY() + stringHeight));
-		}	
+		}
+		
+		if(drawZoomBox){
+			int x1,y1,boxW,boxH;
+			x1 = Math.min(zoomBoxStartX, zoomBoxEndX);
+			y1 = Math.min(zoomBoxStartY,zoomBoxEndY);
+			boxW = Math.abs(zoomBoxEndX-zoomBoxStartX);
+			boxH = Math.abs(zoomBoxEndY-zoomBoxStartY);
+			g.drawRect(x1, y1, boxW, boxH);
+			
+			Graphics2D g2 = (Graphics2D)g;
+			g2.setColor(Color.blue);
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, .2f));
+			Rectangle2D rect = new Rectangle2D.Double(x1,y1,boxW,boxH);
+			g2.fill(rect);
+		}
+		//System.out.println("Ending paint...");
 	}
 	
 	private Vector<Color> currentColors() {
@@ -430,46 +471,55 @@ public class GraphCanvas extends JPanel implements MouseListener, MouseMotionLis
 	}	
 
 	public void mouseClicked(MouseEvent e) {
-		/*requestFocusInWindow();
-		
-		if(interactive) {
-			double radius = 5.0;		
-			for(int i = 0; i < points.size(); i++) {
-				Point2D.Double p = convertToPanel(points.elementAt(i).coordinate);
-				if(e.getX() >= (p.x - radius) && e.getX() <= (p.x + radius) && e.getY() >= (p.y - radius) && e.getY() <= (p.y + radius)) {
-					setPop(e, "(" + points.elementAt(i).coordinate.x + ", " + points.elementAt(i).coordinate.y + ")");
-					return;
-				}else{
-					pop.setVisible(false);
-				}
-			}	
-		}*/		
+		double radius = 5.0;		
+		for(int i = 0; i < points.size(); i++) {
+			Point2D.Double p = convertToPanel(points.elementAt(i).coordinate);
+			if(e.getX() >= (p.x - radius) && e.getX() <= (p.x + radius) && e.getY() >= (p.y - radius) && e.getY() <= (p.y + radius)) {
+				setPop(e, "(" + points.elementAt(i).coordinate.x + ", " + points.elementAt(i).coordinate.y + ")");
+				return;
+			}else{
+				pop.setVisible(false);
+			}
+		}
 	}
 	
 	public void mouseMoved(MouseEvent e) {
-		//pop.setVisible(false);
-		requestFocusInWindow();
 		
-		if(interactive) {
-			double radius = 5.0;		
-			for(int i = 0; i < points.size(); i++) {
-				Point2D.Double p = convertToPanel(points.elementAt(i).coordinate);
-				if(e.getX() >= (p.x - radius) && e.getX() <= (p.x + radius) && e.getY() >= (p.y - radius) && e.getY() <= (p.y + radius)) {
-					setPop(e, "(" + points.elementAt(i).coordinate.x + ", " + points.elementAt(i).coordinate.y + ")");
-					return;
-				}else{
-					pop.setVisible(false);
-				}
-			}	
-		}	
 	}
 	
 	public void mouseDragged(MouseEvent e) {
+		
+		if(!drawZoomBox){
+			drawZoomBox = true;
+			zoomBoxStartX = e.getX();
+			zoomBoxStartY = e.getY();
+		}else{
+			zoomBoxEndX = e.getX();
+			zoomBoxEndY = e.getY();
+			repaint();
+		}
 	}	
 	public void mouseEntered(MouseEvent e){}
 	public void mouseExited(MouseEvent e){}
-	public void mousePressed(MouseEvent e){}
-	public void mouseReleased(MouseEvent e){}
+	public void mousePressed(MouseEvent e){
+		
+	}
+	public void mouseReleased(MouseEvent e){
+		if(drawZoomBox){
+			drawZoomBox = false;
+			interactive = true;
+			//Math.min(zoomBoxStartX, zoomBoxEndX), Math.min(zoomBoxStartY,zoomBoxEndY), Math.abs(zoomBoxEndX-zoomBoxStartX), Math.abs(zoomBoxEndY-zoomBoxStartY)
+			Point2D sp = this.convertToGraph(Math.min(zoomBoxStartX, zoomBoxEndX), Math.min(zoomBoxStartY,zoomBoxEndY));
+			//System.out.println("Starting Point: "+sp.getX()+" "+sp.getY());
+			Point2D ep = this.convertToGraph(Math.max(zoomBoxStartX,zoomBoxEndX), Math.max(zoomBoxStartY,zoomBoxEndY));
+			//System.out.println("Ending Point: "+ep.getX()+" "+ep.getY());
+			setGraphBounds(sp.getX(), ep.getX(), ep.getY(), sp.getY());
+			TRANSLATE_X_STEP = (xMax - xMin) / 10.0;
+			TRANSLATE_Y_STEP = (yMax - yMin) / 10.0;
+			calculateProperties();
+			repaint();
+		}
+	}
 	
 	
 	public void setPop(MouseEvent e, String text) {

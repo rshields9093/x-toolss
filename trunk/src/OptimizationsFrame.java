@@ -94,8 +94,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 	
 	public void addOptimization(OptimizationPanel op){
 		optPanel.add(op);
-		optPanel.setSize(optPanel.getMinimumSize());
-		scrollPane.revalidate();
+		optPanel.revalidate();
 	}
 	
 	public void removeOptimization(OptimizationPanel op){

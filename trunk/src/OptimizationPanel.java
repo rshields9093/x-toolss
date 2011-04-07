@@ -22,24 +22,34 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.swing.*;
 
 import lib.genevot.ECResult;
 import lib.genevot.Population;
 
 public class OptimizationPanel extends JPanel implements ActionListener{
-	JFrame resultsFrame;
+	//JFrame resultsFrame;
 	XTOOLSECMonitor monitor;
+	XTOOLSRunnable ecThread;
 	ThreadTerminator tt;
 	Population population;
 	ECResult result;
 	int maxNumEvals;
+	int numEvalsPerRun;
 	
 	//Update panel on time interval
 	Timer timer;
 	boolean isComplete = false;
 	boolean forceUpdate = true;
 	
+	//Variables for calculating time
+	Calendar cal;
+	long startTime;
+	long lastUpdateTime;
+	long lastEvalMillis = Long.MAX_VALUE;
 	int secondsPassed = 0;
 	int secondsRemaining = 0;
 	double percentComplete = 0.0;
@@ -52,12 +62,17 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	JButton btnStop;
 	JButton btnPauseResume;
 	
-	OptimizationPanel(XTOOLSECMonitor mon, ThreadTerminator threadTerm, Population p, String description, int evals, int runs){
+	OptimizationPanel(XTOOLSECMonitor mon, XTOOLSRunnable xtrunnable, ThreadTerminator threadTerm, Population p, String description, int evals, int runs){
 		monitor = mon;
 		tt = threadTerm;
 		timer = new Timer(1000, this);
+		ecThread = xtrunnable;
 		population = p;
+		numEvalsPerRun = evals;
 		maxNumEvals = evals*runs;
+		cal = Calendar.getInstance();
+		startTime = cal.getTimeInMillis();
+		lastUpdateTime = cal.getTimeInMillis();
 		Color backgroundColor = new Color(173,194,255);
 		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		this.setBackground(backgroundColor);
@@ -210,12 +225,12 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		//Handle timer event
 		secondsPassed++;
-		if(forceUpdate){
+		if(forceUpdate && secondsPassed%20==19){
 			//Will update even if the initial population has not been completed.
 			updateData();
 			forceUpdate = true;
 		}
-		updateData();
+		//updateData();
 		updateComponents();
 	}
 	
@@ -228,8 +243,15 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 			progressBar.setValue(100);
 			timer.stop();
 		}else{
-			if(secondsPassed%10 == 0 && percentComplete > 0){
-				secondsRemaining = (int)((secondsPassed/percentComplete)-secondsPassed);
+			if(secondsPassed%20 == 0 && percentComplete > 0){
+				long numEvalsCompleted = (long) ((ecThread.getNumRuns()*numEvalsPerRun)+(double)population.getNumFunctionEvaluations());
+				long numEvalsRemaining = maxNumEvals - numEvalsCompleted;
+				long avgMillisPerEval = (lastUpdateTime-startTime)/numEvalsCompleted;
+				/*
+				 * Calculating time remaining using the following formula:
+				 *   seconds remaining = avg(lastEvalTime,avgEvalTime) * numEvalsRemaining
+				 */
+				secondsRemaining = (int) ((numEvalsRemaining*((lastEvalMillis+avgMillisPerEval)/2))/1000);
 				sTimeRemaining = getTimeRemaining(secondsRemaining);
 				timeRemaining.setText(sTimeRemaining);
 			}
@@ -238,7 +260,13 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	
 	public synchronized void updateData() {
 		forceUpdate = false;
-		percentComplete = ((double)population.getNumFunctionEvaluations()/maxNumEvals);
+		percentComplete = (((ecThread.getNumRuns()*numEvalsPerRun)+(double)population.getNumFunctionEvaluations())/maxNumEvals);
 		progressBar.setValue((int)(percentComplete*100));
+		cal = Calendar.getInstance();
+		lastEvalMillis = cal.getTimeInMillis()-lastUpdateTime;
+		lastUpdateTime = cal.getTimeInMillis();
+		//System.out.println("Time Passed: "+(lastUpdateTime-startTime));
+		//System.out.println("Time For Last Eval: "+lastEvalMillis);
+		//System.out.println();
 	}
 }
