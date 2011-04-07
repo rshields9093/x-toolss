@@ -26,6 +26,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JRadioButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
@@ -49,7 +51,7 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	private JPanel mainPanel;
 	private double bestFit = Double.POSITIVE_INFINITY;
 	
-	public XTOOLSResultsFrame() {
+	public XTOOLSResultsFrame(int numberOfGenerations) {
 		bestIndividualInfo = "";
 		currentPopulationInfo = "";
 		textArea = new JTextArea();
@@ -127,7 +129,7 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	
 	public void addPoint(Point2D.Double p, Color c) {
 		graphCanvas.addPoint(p, c);
-		graphCanvas.setInteractive(true);
+		//graphCanvas.setInteractive(true);
 	}
 	
 	public void clearPoints() {
@@ -135,23 +137,31 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	}
 
 	private void updateTextArea() {
-		if(radioButton[1].isSelected()) {
-			textArea.setText(bestIndividualInfo);
-			textArea.setCaretPosition(textArea.getDocument().getLength());
-		}
-		else if(radioButton[2].isSelected()) {
-			textArea.setText(currentPopulationInfo);
-			textArea.setCaretPosition(0);
-		}
+		SwingUtilities.invokeLater(new Runnable(){
+
+			@Override
+			public void run() {
+				if(radioButton[1].isSelected()) {
+					textArea.setText(bestIndividualInfo);
+					textArea.setCaretPosition(textArea.getDocument().getLength());
+				}
+				else if(radioButton[2].isSelected()) {
+					textArea.setText(currentPopulationInfo);
+					textArea.setCaretPosition(0);
+				}
+				
+			}
+			
+		});
+		
 	}
 	
 	public void actionPerformed(ActionEvent e) {
+		boolean isGraph = false;
 		if(e.getActionCommand().equals("Convergence Graph")) {
 			mainPanel.removeAll();
 			mainPanel.add(graphCanvas, BorderLayout.CENTER);
-			//mainPanel.revalidate();
-			//mainPanel.repaint();
-			//graphCanvas.repaint();
+			isGraph = true;
 		}
 		else if(e.getActionCommand().equals("Generation Best Only")) {
 			textArea.setText(bestIndividualInfo);
@@ -159,8 +169,6 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			//mainPanel.revalidate();
-			//mainPanel.repaint();
 		}
 		else if(e.getActionCommand().equals("Current Population")) {
 			textArea.setText(currentPopulationInfo);
@@ -168,11 +176,10 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 			mainPanel.removeAll();
 			scrollPane.setMinimumSize(new Dimension(485, 430));
 			mainPanel.add(scrollPane, BorderLayout.CENTER);
-			//mainPanel.revalidate();
-			//mainPanel.repaint();
 		}
 		validate();
 		mainPanel.repaint();
+		if(isGraph) graphCanvas.requestFocusInWindow();
 	}
 	
 	
@@ -193,15 +200,11 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 	
 	public void windowOpened(WindowEvent e) {}
 
-
-
 	@Override
 	public void componentHidden(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
 		
 	}
-
-
 
 	@Override
 	public void componentMoved(ComponentEvent arg0) {
@@ -209,27 +212,16 @@ public class XTOOLSResultsFrame extends JFrame implements ActionListener, Window
 		
 	}
 
-
-
 	@Override
 	public void componentResized(ComponentEvent arg0) {
 		scrollPane.setPreferredSize(mainPanel.getSize());
 		graphCanvas.setPreferredSize(mainPanel.getSize());
 	}
 
-
-
 	@Override
 	public void componentShown(ComponentEvent arg0) {
 		// TODO Auto-generated method stub
 		
 	}
-	
-	
-	/*public static void main(String[] args) {
-		XTOOLSResultsFrame window = new XTOOLSResultsFrame();
-		window.addPoint(new Point2D.Double(3.0, 140.0), Color.blue);
-		window.addPoint(new Point2D.Double(100.0, 40.0), Color.red);
-	}*/
 }
 

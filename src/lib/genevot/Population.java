@@ -204,7 +204,7 @@ public class Population implements Cloneable {
 				try{
 					Thread.sleep(1000);
 				}catch(Exception e){
-					System.out.println("Blah");
+					//No need to output error information.
 				}
 			}
 		}
@@ -256,11 +256,10 @@ public class Population implements Cloneable {
 			Individual[] parent = parentSelection.selectParents(this, individual);
 			Individual[] child = recombinationOperator.recombine(this, parent);
 			child = mutationOperator.mutate(this, child);
-			int numEvaluations = evaluate(child, terminationCriteria);
+			evaluate(child, terminationCriteria);
 			if(oa != null) {
 				oa.adaptMutation(this, parent, child);
 			}
-			//numFunctionEvaluations += numEvaluations;
 			individual = survivorSelection.selectSurvivors(this, parent, child);
 			individual = migrationOperator.migrate(this, individual);
 			result = ecMon.getResults(this, parent, child);

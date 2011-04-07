@@ -41,7 +41,7 @@
 	import java.awt.dnd.DropTargetListener;
 	import javax.swing.event.*;
 	import javax.swing.text.*; 
-import lib.genevot.Chromosome;
+	import lib.genevot.Chromosome;
 	
     class AppFile
    {
@@ -265,14 +265,14 @@ import lib.genevot.Chromosome;
 							fitVec.add(new Double(fitness));
 						}	
 						catch (NumberFormatException nfe) {
-							System.out.println("Error Reading Fitness Value: " + s);
+							System.err.println("Error Reading Fitness Value: " + s);
 						}
 					}	
 					line = br.readLine();
 				}
 			}
 			catch (IOException e) {  
-				System.out.println("Error Reading from Output File");
+				System.err.println("Error Reading from Output File");
 			}
         }
 		double[] fitArray = new double[fitVec.size()];

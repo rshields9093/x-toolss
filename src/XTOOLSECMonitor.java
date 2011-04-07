@@ -55,7 +55,7 @@ public class XTOOLSECMonitor implements ECMonitor{
 		ecResult = new ECResult();
 		optPanel = op;
 		if(showFrame) {
-			frame = new XTOOLSResultsFrame();
+			frame = new XTOOLSResultsFrame(maxFunEvals);
 		}
 		else {
 			frame = null;
@@ -67,7 +67,7 @@ public class XTOOLSECMonitor implements ECMonitor{
 				logfile = new PrintWriter(new FileOutputStream(logFilename));
 			}
 			catch(IOException e) {
-				System.out.println(e);
+				System.err.println(e);
 			}
 		}
 		if(outFilename != null) {
@@ -75,7 +75,7 @@ public class XTOOLSECMonitor implements ECMonitor{
 				outfile = new PrintWriter(new FileOutputStream(outFilename));
 			}
 			catch(IOException e) {
-				System.out.println(e);
+				System.err.println(e);
 			}
 		}	
 		this.logInterval = logInterval;
@@ -285,15 +285,16 @@ public class XTOOLSECMonitor implements ECMonitor{
 			frame.setCurrentPopulationInfo(tempString);
 			frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
 			frame.addPoint(new Point2D.Double(population.getNumGenerations(), bestFit), Color.red);
-			if(optPanel != null){
-				optPanel.updateData();
-			}
+			
 		}
 		if(numFunEvals >= logInterval) {
 			numFunEvals = 0;
 			numIntervals++;
 		}
-		
+		if(optPanel != null){
+			//System.out.println("Calling optPanel.updateData() from XTOOLSECMon...");
+			optPanel.updateData();
+		}
 //		System.out.println("Mutation Rate (" + population.getNumGenerations() + "): " + population.getMutationOperator().getMutationRate());
 		return ecResult;
 	}
@@ -341,5 +342,9 @@ public class XTOOLSECMonitor implements ECMonitor{
 
 	public ECResult getLastResult() {
 		return ecResult;
+	}
+
+	public void setOptPanel(OptimizationPanel tempOptPanel) {
+		optPanel = tempOptPanel;
 	}
 }

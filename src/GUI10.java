@@ -98,7 +98,7 @@ import lib.genevot.*;
         String[] nameOfGA = {"Generational GA with BLX", "Steady-state GA", "Steady-state GA with BLX", 
       		  "Steady-generational GA with BLX", "PSO", "Generational DEA", "Steady-state DEA", 
       		  "Elitist EDA", "Standard EP", "Continuous Standard EP", "Meta-EP", "Continuous Meta-EP"};
-        Integer popSize, numEval, numElites, tournSize, neighborhoodSize, constCoeff, numRuns, logInterval;
+        Integer popSize, numEval, numElites, tournSize, neighborhoodSize, constCoeff, numRuns, numThreads, logInterval;
         Float crossoverUsageRate, blxAlpha, mutUsageRate, mutRate, mutRange, phi;
         String logFileName;
   	    String memespaceIP;
@@ -237,6 +237,9 @@ import lib.genevot.*;
          neighborhoodSize = new Integer(3);
          constCoeff = new Integer(1);
          numRuns = new Integer(1);
+         numThreads = new Integer(1);
+         numThreads = 1;
+         
          crossoverUsageRate = new Float(1.0);
          blxAlpha = new Float(0.25);
          mutUsageRate = new Float(1.0);
@@ -1133,7 +1136,19 @@ import lib.genevot.*;
             else{
                pg1.setVisible(false);
                pg3.setVisible(false);
-               for(int i = 0; i < numRuns; i++) executeApp();
+               
+               //Divide the number of runs evenly between threads
+               if(numThreads>numRuns) numThreads = numRuns;
+               int numRunsPerThread = numRuns/numThreads;
+               int leftoverRuns = numRuns%numThreads;
+               for(int i = 0; i < numThreads; i++){
+            	   if(leftoverRuns > 0){
+            		   executeApp(numRunsPerThread + 1);
+            		   leftoverRuns--;
+            	   }else{
+            		   executeApp(numRunsPerThread);
+            	   }
+               }
             }
          }
 		 else if(e.getSource() == gaSelect) {
@@ -1593,7 +1608,7 @@ import lib.genevot.*;
     	   //Finds unique working directory name, creates working directory, and copies all 
     	   //files/folders (except [runsFolerName]) into working dir.
     	   //Returns working directory path.
-    	   File fWorkingDir, fXTSDir;
+    	   File fWorkingDir, fXTSDir, fLogDir;
     	   Calendar cal = Calendar.getInstance();
     	   String dateStr = ""+cal.get(Calendar.YEAR)+String.format("%02d", (cal.get(Calendar.MONTH)+1))+String.format("%02d", cal.get(Calendar.DATE));
     	   //System.out.println(curDir+File.separator+"X-TOOLSS_RUNS");
@@ -1605,12 +1620,10 @@ import lib.genevot.*;
 			   fWorkingDir = new File(workingDirPath+dateStr+"_"+String.format("%03d", i));
 			   if(!fWorkingDir.exists()){
 				   //If it doesn't exist, create the file and end the loop
-				   if(!fWorkingDir.mkdirs()){
-		    		   System.err.println("ERROR: Unable to create working directory.");
-		    	   }else{
-		    		   //Directorys created successfully.
-		    		   workingDirPath = workingDirPath+dateStr+"_"+String.format("%03d", i);
-		    	   }
+				   fLogDir = new File(workingDirPath+dateStr+"_"+String.format("%03d", i)+File.separator+"X-TOOLSS_LOGS");
+	    		   if(!fLogDir.mkdirs()) System.err.println("ERROR: Unable to create X-TOOLSS_LOGS directory.");
+	    		   
+	    		   workingDirPath = workingDirPath+dateStr+"_"+String.format("%03d", i);
 				   cont = false;
 			   }
 			   i++;
@@ -1711,7 +1724,7 @@ import lib.genevot.*;
     	   }
        }
        
-       private void executeApp(){
+       private void executeApp(int numberOfRuns){
     	   /*
     	    * This function executes a single independent optimization.
     	    */
@@ -1807,13 +1820,12 @@ import lib.genevot.*;
          //File xtsFile = new File((String) xlsFiles.get(0));
          
 		 String logFilename = (shouldLog)? logFileName + ".log" : "xtoolss.log";
-		 logFilename = workingDir+File.separator+logFilename;
+		 logFilename = workingDir+File.separator+"X-TOOLSS_LOGS"+File.separator+logFilename;
          String outFilename = (shouldLog)? logFileName + ".out" : "xtoolss.out";
-         outFilename = workingDir+File.separator+outFilename;
+         outFilename = workingDir+File.separator+"X-TOOLSS_LOGS"+File.separator+outFilename;
          String statFilename = (shouldLog)? logFileName + ".stat" : "xtoolss.stat";
-         statFilename = workingDir+File.separator+statFilename;
-         xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
-         currentFrame = xtoolsECMon.getFrame();
+         statFilename = workingDir+File.separator+"X-TOOLSS_LOGS"+File.separator+statFilename;
+         
          
 		 XTOOLSMigrationOperator migOp = null;
 		 if(!memespaceIP.equalsIgnoreCase("NONE") && (memespacePort.intValue() > 0)) {
@@ -1824,7 +1836,6 @@ import lib.genevot.*;
 		 }
 		
 		 population = null;
-//		public Population(int size, Interval[] geneBounds, EvaluationFunction ef, ParentSelection ps, RecombinationOperator ro, MutationOperator mo, SurvivorSelection ss, MigrationOperator mig) {
 		 ParentSelection parentSelection = null;
 		 RecombinationOperator recombinationOp = null;
 		 MutationOperator mutationOp = null;
@@ -1903,20 +1914,26 @@ import lib.genevot.*;
 				mutationOp = edaOps;
 				recombinationOp = edaOps;
 	         }
+			 xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+	         currentFrame = xtoolsECMon.getFrame();
 			 population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
-			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, 1/*numRuns.intValue()*/, tt, statFilename, true, oneFifthRule);
+			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numberOfRuns, tt, statFilename, true, oneFifthRule);
 			 ecThread.start();
 			 hasStarted = true;
-			 tempOptPanel = new OptimizationPanel(xtoolsECMon, tt, population, newMod.getFileName(), numEval.intValue(), 1/*numRuns.intValue()*/);
+			 tempOptPanel = new OptimizationPanel(xtoolsECMon, ecThread, tt, population, newMod.getFileName(), numEval.intValue(), numberOfRuns);
+			 xtoolsECMon.setOptPanel(tempOptPanel);
 		 }
 		 else {
 			if(canUsePSO) {
 	            boolean useCC = (constCoeff.intValue() > 0)? true : false;
+	            xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, outFilename);
+	            currentFrame = xtoolsECMon.getFrame();
 	            pso = new ParticleSwarmOptimization(popSize.intValue(), neighborhoodSize.intValue(), minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
-				ecThread = new XTOOLSRunnable(pso, 1/*numRuns.intValue()*/, tt, statFilename, true);
+				ecThread = new XTOOLSRunnable(pso, numberOfRuns, tt, statFilename, true);
 				ecThread.start();
 				hasStarted = true;
-				tempOptPanel = new OptimizationPanel(xtoolsECMon, tt, pso.getPopulation(), newMod.getFileName(), numEval.intValue(), 1/*numRuns.intValue()*/);
+				tempOptPanel = new OptimizationPanel(xtoolsECMon, ecThread, tt, pso.getPopulation(), newMod.getFileName(), numEval.intValue(), numberOfRuns);
+				xtoolsECMon.setOptPanel(tempOptPanel);
 			}
 			else {
 				JOptionPane.showMessageDialog(null, "You must have only float or double inputs to use PSO.");
@@ -1951,18 +1968,21 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logFileName = text;
+                numThreads = new Integer((int)value);
             }
             else if(selIndex == 7) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 8) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 10) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 11) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:     "+popSize);
@@ -1970,6 +1990,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:      "+mutRange);
             gaVars.add(" Total Evaluations:   "+numEval);
             gaVars.add(" Number of Runs:      "+numRuns);
+            gaVars.add(" Number of Threads:   "+numThreads);
             gaVars.add(" Log File Name:       "+logFileName);
             gaVars.add(" Log Interval:        "+logInterval);
             gaVars.add(" Memespace IP:        "+memespaceIP);
@@ -1993,18 +2014,21 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
+                numThreads = new Integer((int)value);
+             }
+            else if(selIndex == 7) {
                logFileName = text;
             }
-            else if(selIndex == 7) {
+            else if(selIndex == 8) {
                logInterval = new Integer((int)value);
             }
-            else if(selIndex == 8) {
+            else if(selIndex == 9) {
                memespaceIP = text;
             }
-            else if(selIndex == 9) {
+            else if(selIndex == 10) {
                memespacePort = new Integer((int)value);
             }
-            else if(selIndex == 10) {
+            else if(selIndex == 11) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:    "+popSize);
@@ -2012,6 +2036,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:     "+mutRange);
             gaVars.add(" Total Evaluations:  "+numEval);
             gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Number of Threads:  "+numThreads);
             gaVars.add(" Log File Name:      "+logFileName);
             gaVars.add(" Log Interval:       "+logInterval);
             gaVars.add(" Memespace IP:       "+memespaceIP);
@@ -2032,24 +2057,28 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 7) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 9) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 10) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:      "+popSize);
             gaVars.add(" Eta Mutation Rate:    "+mutRate);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2070,24 +2099,28 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 7) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 9) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 10) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:      "+popSize);
             gaVars.add(" Eta Mutation Rate:    "+mutRate);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2120,21 +2153,24 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 10) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 11) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 12) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 13) {
-               migrationRate = value;
+               memespacePort = new Integer((int)value);
             }
             else if(selIndex == 14) {
+               migrationRate = value;
+            }
+            else if(selIndex == 15) {
                useOneFifthRule = text.toUpperCase();
             }
             gaVars.add(" Population Size:      "+popSize);
@@ -2145,6 +2181,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2181,21 +2218,24 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 10) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 11) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 12) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 13) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 14) {
-               migrationRate = value;
+               memespacePort = new Integer((int)value);
             }
             else if(selIndex == 15) {
+               migrationRate = value;
+            }
+            else if(selIndex == 16) {
                useOneFifthRule = text.toUpperCase();
             }
             gaVars.add(" Population Size:       "+popSize);
@@ -2207,6 +2247,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:        "+mutRange);
             gaVars.add(" Total Evaluations:     "+numEval);
             gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Number of Threads:     "+numThreads);
             gaVars.add(" Log File Name:         "+logFileName);
             gaVars.add(" Log Interval:          "+logInterval);
             gaVars.add(" Memespace IP:          "+memespaceIP);
@@ -2265,6 +2306,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:        "+mutRange);
             gaVars.add(" Total Evaluations:     "+numEval);
             gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Number of Threads:     "+numThreads);
             gaVars.add(" Log File Name:         "+logFileName);
             gaVars.add(" Log Interval:          "+logInterval);
             gaVars.add(" Memespace IP:          "+memespaceIP);
@@ -2295,21 +2337,24 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 10) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 11) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 12) {
-               migrationRate = value;
+               memespacePort = new Integer((int)value);
             }
             else if(selIndex == 13) {
+               migrationRate = value;
+            }
+            else if(selIndex == 14) {
                useOneFifthRule = text.toUpperCase();
             }
             gaVars.add(" Population Size:        "+popSize);
@@ -2319,6 +2364,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:         "+mutRange);
             gaVars.add(" Total Evaluations:      "+numEval);
             gaVars.add(" Number of Runs:         "+numRuns);
+            gaVars.add(" Number of Threads:      "+numThreads);
             gaVars.add(" Log File Name:          "+logFileName);
             gaVars.add(" Log Interval:           "+logInterval);
             gaVars.add(" Memespace IP:           "+memespaceIP);
@@ -2343,18 +2389,21 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 7) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 8) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 10) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 11) {
                migrationRate = value;
             }
             gaVars.add(" Number of Particles:          "+popSize);
@@ -2362,6 +2411,7 @@ import lib.genevot.*;
             gaVars.add(" Constriction Coefficient?:    "+constCoeff);
             gaVars.add(" Total Evaluations:            "+numEval);
             gaVars.add(" Number of Runs:               "+numRuns);
+            gaVars.add(" Number of Threads:            "+numThreads);
             gaVars.add(" Log File Name:                "+logFileName);
             gaVars.add(" Log Interval:                 "+logInterval);
             gaVars.add(" Memespace IP:                 "+memespaceIP);
@@ -2394,18 +2444,21 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 10) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 11) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 12) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 13) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 14) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:       "+popSize);
@@ -2416,6 +2469,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:        "+mutRange);
             gaVars.add(" Total Evaluations:     "+numEval);
             gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Number of Threads:     "+numThreads);
             gaVars.add(" Log File Name:         "+logFileName);
             gaVars.add(" Log Interval:          "+logInterval);
             gaVars.add(" Memespace IP:          "+memespaceIP);
@@ -2445,18 +2499,21 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               logFileName = text;
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 9) {
-               logInterval = new Integer((int)value);
+               logFileName = text;
             }
             else if(selIndex == 10) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 11) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 12) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 13) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:       "+popSize);
@@ -2466,6 +2523,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:        "+mutRange);
             gaVars.add(" Total Evaluations:     "+numEval);
             gaVars.add(" Number of Runs:        "+numRuns);
+            gaVars.add(" Number of Threads:     "+numThreads);
             gaVars.add(" Log File Name:         "+logFileName);
             gaVars.add(" Log Interval:          "+logInterval);
             gaVars.add(" Memespace IP:          "+memespaceIP);
@@ -2486,24 +2544,28 @@ import lib.genevot.*;
                numRuns = new Integer((int)value);
             }
             else if(selIndex == 5) {
-               logFileName = text.toUpperCase();
+            	numThreads = new Integer((int)value);
             }
             else if(selIndex == 6) {
-               logInterval = new Integer((int)value);
+               logFileName = text.toUpperCase();
             }
             else if(selIndex == 7) {
-               memespaceIP = text;
+               logInterval = new Integer((int)value);
             }
             else if(selIndex == 8) {
-               memespacePort = new Integer((int)value);
+               memespaceIP = text;
             }
             else if(selIndex == 9) {
+               memespacePort = new Integer((int)value);
+            }
+            else if(selIndex == 10) {
                migrationRate = value;
             }
             gaVars.add(" Population Size:     "+popSize);
             gaVars.add(" Number of Elites:    "+numElites);
             gaVars.add(" Total Evaluations:   "+numEval);
             gaVars.add(" Number of Runs:      "+numRuns);
+            gaVars.add(" Number of Threads:   "+numThreads);
             gaVars.add(" Log File Name:       "+logFileName);
             gaVars.add(" Log Interval:        "+logInterval);
             gaVars.add(" Memespace IP:        "+memespaceIP);
@@ -2524,6 +2586,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:     "+mutRange);
             gaVars.add(" Total Evaluations:  "+numEval);
             gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Number of Threads:  "+numThreads);
             gaVars.add(" Log File Name:      "+logFileName);
             gaVars.add(" Log Interval:       "+logInterval);
             gaVars.add(" Memespace IP:       "+memespaceIP);
@@ -2536,6 +2599,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:     "+mutRange);
             gaVars.add(" Total Evaluations:  "+numEval);
             gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Number of Threads:  "+numThreads);
             gaVars.add(" Log File Name:      "+logFileName);
             gaVars.add(" Log Interval:       "+logInterval);
             gaVars.add(" Memespace IP:       "+memespaceIP);
@@ -2547,6 +2611,7 @@ import lib.genevot.*;
             gaVars.add(" Eta Mutation Rate:  "+mutRate);
             gaVars.add(" Total Evaluations:  "+numEval);
             gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Number of Threads:  "+numThreads);
             gaVars.add(" Log File Name:      "+logFileName);
             gaVars.add(" Log Interval:       "+logInterval);
             gaVars.add(" Memespace IP:       "+memespaceIP);
@@ -2558,6 +2623,7 @@ import lib.genevot.*;
             gaVars.add(" Eta Mutation Rate:  "+mutRate);
             gaVars.add(" Total Evaluations:  "+numEval);
             gaVars.add(" Number of Runs:     "+numRuns);
+            gaVars.add(" Number of Threads:  "+numThreads);
             gaVars.add(" Log File Name:      "+logFileName);
             gaVars.add(" Log Interval:       "+logInterval);
             gaVars.add(" Memespace IP:       "+memespaceIP);
@@ -2573,6 +2639,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2590,6 +2657,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2606,6 +2674,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2621,6 +2690,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2634,6 +2704,7 @@ import lib.genevot.*;
             gaVars.add(" Constriction Coefficient?: "+constCoeff);
             gaVars.add(" Total Evaluations:         "+numEval);
             gaVars.add(" Number of Runs:            "+numRuns);
+            gaVars.add(" Number of Threads:         "+numThreads);
             gaVars.add(" Log File Name:             "+logFileName);
             gaVars.add(" Log Interval:              "+logInterval);
             gaVars.add(" Memespace IP:              "+memespaceIP);
@@ -2649,6 +2720,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2663,6 +2735,7 @@ import lib.genevot.*;
             gaVars.add(" Mutation Range:       "+mutRange);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
@@ -2674,6 +2747,7 @@ import lib.genevot.*;
             gaVars.add(" Number of Elites:     "+numElites);
             gaVars.add(" Total Evaluations:    "+numEval);
             gaVars.add(" Number of Runs:       "+numRuns);
+            gaVars.add(" Number of Threads:    "+numThreads);
             gaVars.add(" Log File Name:        "+logFileName);
             gaVars.add(" Log Interval:         "+logInterval);
             gaVars.add(" Memespace IP:         "+memespaceIP);
