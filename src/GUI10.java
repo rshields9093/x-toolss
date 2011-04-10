@@ -194,6 +194,10 @@ import lib.genevot.*;
     	 optFrame = optimizationsFrame;
          init();
       }
+      
+      public void setVisible(boolean visible){
+    	  pg1.setVisible(visible);
+      }
    
       //**********************************************************************
       //
@@ -302,7 +306,7 @@ import lib.genevot.*;
          pg1.setLocationRelativeTo(null);
          error.setLocationRelativeTo(null);
         
-         pg1.setVisible(true);
+         pg1.setVisible(false);
          pg3.setVisible(false);
       }
        

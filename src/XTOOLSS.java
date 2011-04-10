@@ -55,7 +55,6 @@ public class XTOOLSS {
 	         java.awt.EventQueue.invokeLater(
 	                new Runnable() {
 	                   public void run() {
-	                     //new GUI10();
 	                     OptimizationsFrame tempFrame = new OptimizationsFrame();
 	                     tempFrame.setVisible(true);
 	                  }
