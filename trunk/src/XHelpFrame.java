@@ -181,6 +181,7 @@
           public String getSectionText() {
             try {
                InputStream is = java.net.URLClassLoader.getSystemResource("HelpText.dat").openStream();
+               if(is== null) is = new FileInputStream("HelpText.dat");
                BufferedReader in = new BufferedReader(new InputStreamReader(is));
                String str;
                String text = "";
@@ -206,7 +207,7 @@
       }
    
    
-       public static void main(String[] args) {
+       /*public static void main(String[] args) {
       
          java.awt.EventQueue.invokeLater(
                 new Runnable() {
@@ -214,6 +215,6 @@
                      new XHelpFrame().setVisible(false);
                   }
                });
-      }
+      }*/
    
    }
