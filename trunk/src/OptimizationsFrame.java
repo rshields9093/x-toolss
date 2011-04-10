@@ -22,6 +22,16 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
     
 	public OptimizationsFrame(){
 		super();
+		
+		/*Create new GUI10 window to load it into memory
+		 * so the program is more responsive when the user
+		 * when the user clicks the "New Optimization"
+		 * button.
+		 */
+		GUI10 temp = new GUI10(this);
+		if(temp != null) temp.setTitle("This will be removed...");
+		temp = null;
+		
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		setSize(500,600);
 		Dimension d = new Dimension(425,450);
@@ -153,7 +163,8 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 		//New Optimization
 		//Disable the button so multiple optimizations aren't clicked.
 		setEnabled(false);
-		new GUI10(this);
+		GUI10 optWizard = new GUI10(this);
+		optWizard.setVisible(true);
 		setEnabled(true);
 	}
 	
