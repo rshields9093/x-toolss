@@ -13,7 +13,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 	JButton addOptButton;
 	VerticalLayout layout;
 	
-	String version = "1.3  (Alpha 6)";
+	String version = "1.3  Beta (Release 18)";
 	String webAddr = "http://nxt.ncat.edu/";
 	
 	JMenuBar menuBar; 
