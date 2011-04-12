@@ -53,10 +53,15 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 	int secondsPassed = 0;
 	int secondsRemaining = 0;
 	double percentComplete = 0.0;
+	
+	String algInfo;
+	String runInfo;
 	GridBagLayout layout;
 	GridBagConstraints c;
 	JLabel desc;
 	JLabel timeRemaining;
+	JLabel jLblAlgInfo;
+	JLabel jLblRunInfo;
 	JProgressBar progressBar;
 	JButton btnShow;
 	JButton btnStop;
@@ -89,6 +94,8 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		desc = new JLabel(description);
 		timeRemaining = new JLabel("Calculating Time...");
 		progressBar = new JProgressBar();
+		jLblRunInfo = new JLabel("");
+		jLblAlgInfo = new JLabel("");
 		btnShow = new JButton("Show");
 		btnStop = new JButton("Stop");
 		btnPauseResume = new JButton("Pause");
@@ -190,7 +197,24 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		layout.setConstraints(progressBar, c);
 		add(progressBar);
 		
+		c.gridwidth = 1;
+		c.gridx = 0;
+		c.gridy = 2;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.SOUTHWEST;
+		layout.setConstraints(jLblAlgInfo, c);
+		add(jLblAlgInfo);
+		
+		c.gridwidth = 1;
+		c.gridx = 0;
+		c.gridy = 3;
+		c.fill = GridBagConstraints.NONE;
+		c.anchor = GridBagConstraints.SOUTHWEST;
+		layout.setConstraints(jLblRunInfo, c);
+		add(jLblRunInfo);
+		
 		c.gridwidth = 3;
+		c.gridheight = 2;
 		c.gridx = 1;
 		c.gridy = 2;
 		c.fill = GridBagConstraints.NONE;
@@ -256,6 +280,10 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 				timeRemaining.setText(sTimeRemaining);
 			}
 		}
+		setAlgInfo(algInfo);
+		int currentRun = ecThread.getNumRuns() + 1;
+		if(currentRun > ecThread.getMaxNumRuns()) currentRun = ecThread.getMaxNumRuns();
+		setRunInfo("Run "+ currentRun + " of " + ecThread.getMaxNumRuns());
 	}
 	
 	public synchronized void updateData() {
@@ -268,5 +296,13 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		//System.out.println("Time Passed: "+(lastUpdateTime-startTime));
 		//System.out.println("Time For Last Eval: "+lastEvalMillis);
 		//System.out.println();
+	}
+	public void setRunInfo(String string) {
+		runInfo = string;
+		jLblRunInfo.setText(" "+runInfo);
+	}
+	public void setAlgInfo(String string){
+		algInfo = string;
+		jLblAlgInfo.setText(" GA: "+algInfo);
 	}
 }

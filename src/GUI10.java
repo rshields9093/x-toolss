@@ -1943,6 +1943,7 @@ import lib.genevot.*;
 				JOptionPane.showMessageDialog(null, "You must have only float or double inputs to use PSO.");
 			}
          }
+         tempOptPanel.setAlgInfo(gaName);
          optFrame.addOptimization(tempOptPanel);
       }
    	   
