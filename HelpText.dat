@@ -3,12 +3,6 @@ Welcome to X-TOOLSS help.
 Select one of the topics to the left to view information on that topic.
 </xsection>
 
-
-
-
-
-
-
 <xsection = [Help Topics, Setting up a Module]>
 Each X-TOOLSS application consists of a module. A module consists of a module (.xts) file, an input file, a code file, and an output file. All of these files should be placed in the same directory on the computer. When the module is executed within X-TOOLSS, values of the input variables will be sent to the input file (1 per line), the codefile will be executed (this should read the values of the input variables from the input file and print the fitness value to the output file), and the fitness value will be read from the output file and printed to the screen.
 </xsection>
@@ -21,12 +15,12 @@ Each module file consists of the following information:
 - Output variable name (fitness variable)
 - Output file name
 
-For example, if a module consisted of input variables a, b, and c (all of type integer with ranges of 300 to 700, 400 to 500, and 1 to 1000, respectively); input file infile.input; codefile code.java; output variable fitness1; and output file outfile.output; the module file should look as follows:
+For example, if a module consisted of input variables a, b, and c (of type integer, float, and double  with ranges of 300 to 700, 400 to 500, and 1 to 1000, respectively); input file infile.input; codefile code.java; output variable fitness; and output file outfile.output; the module file should look as follows:
 
 input:
 define a: [300..700]: int;
-define b: [400..500]: int;
-define c: [1..1000]: int;
+define b: [400..500]: float;
+define c: [1..1000]: double;
 
 inputfile:
 infile.input;
@@ -35,7 +29,7 @@ codefile:
 code.java : java;
 
 output:
-define fitness1;
+define fitness;
 
 outputfile:
 outfile.output;
@@ -49,7 +43,7 @@ A module file can be created in any text editing program, but MUST have the exte
 <xsection = [Help Topics, Setting up a Module, Creating an Input File and Output File]>
 The input and output file can have any file extension, but MUST be included in the same directory as the module file. The input file will be edited by X-TOOLSS and will include a variable value on each line (these will be printed in the order in which the variables are listed in the module file). The output file should be created by the codefile, and must include only the fitness value on one line.
 
-*IMPORTANT: Make sure that the input and output file have the same name in the module as they do in the codefile.
+*IMPORTANT: Make sure that the input and output file have the same name in the module as they do in the codefile.  If they do not match, X-TOOLSS will not be able to communicate with the fitness function.
 </xsection>
 
 <xsection = [Help Topics, Setting up a Module, Creating a Codefile]>
@@ -62,26 +56,14 @@ After X-TOOLSS prints the input variable values to the input file in the order l
 </xsection>
 
 
-
-
-
-
-
-
-
-
 <xsection = [Help Topics, Using a Module in X-TOOLSS]>
 After a module is inserted into X-TOOLSS, variables within that module can be viewed on the X-TOOLSS menu. Input variables can be set to constant so that they remain at a fixed value throughout each execution of a module s codefile.
 </xsection>
 
 <xsection = [Help Topics, Using a Module in X-TOOLSS, Specifying a Module in X-TOOLSS]>
-On the first menu within X-TOOLSS, a module file must specified in the module window. There are two ways of accomplishing this:
+On the first menu within X-TOOLSS, a module file must specified in the module window.  To accomplish this, select the Browse option to find a module file on the computer.
 
-1) Using the Browse option to find a module file on the computer, or
-
-2) Dragging the module file directly from a folder on the computer into the X-TOOLSS module window.
-
-Only files with the extension .xts will be accepted into the module window in X-TOOLSS. After the Next button is pressed, X-TOOLSS will check the module file for possible errors. If no errors are found, X-TOOLSS will move to the next menu
+Only files with the extension .xts will be accepted into the module window in X-TOOLSS (Windows Only). After the Next button is pressed, X-TOOLSS will check the module file for possible errors. If no errors are found, X-TOOLSS will move to the next menu
 </xsection>
 
 <xsection = [Help Topics, Using a Module in X-TOOLSS, Viewing Variables in X-TOOLSS]>
@@ -90,12 +72,8 @@ Variables can be set to a constant value using the Set Constant button, and can 
 </xsection>
 
 
-
-
-
-
 <xsection = [Help Topics, X-TOOLSS Output Options]>
-X-TOOLSS provides a variety of outputs for monitoring the state of the system. When an EC is executed, an output window is displayed which contains summary information about the evolution. Additionally, several files may be created within the X-TOOLSS installation directory, each named X-TOOLSS, and each having the appropriate extension as described below.
+X-TOOLSS provides a variety of outputs for monitoring the state of the system. When an EC is executed, an output window is displayed which contains summary information about the evolution. Additionally, several files may be created within the working directory for each optimization, each located in a sub-folder where the .xts file is located, and each having the appropriate extension as described in the following sections.
 </xsection>
 
 <xsection = [Help Topics, X-TOOLSS Output Options, Output Window]>
@@ -144,6 +122,8 @@ Parameters:
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -167,6 +147,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
@@ -193,6 +175,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
@@ -221,6 +205,8 @@ well, and the higher the alpha value, the greater this mutation becomes.
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -240,6 +226,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
@@ -264,6 +252,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
@@ -291,6 +281,8 @@ Parameters:
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -308,6 +300,8 @@ Parameters:
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -324,6 +318,8 @@ Parameters:
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -339,6 +335,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
@@ -358,6 +356,8 @@ Parameters:
 
 · Number of Runs   The number of independent runs to perform.
 
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
+
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
 · Log Interval   The number of function evaluations to execute between screen/file output. If this value is set to anything greater than the Total Evaluations, then only the final generation of each run will be output.
@@ -375,6 +375,8 @@ Parameters:
 · Total Evaluations   The number of function evaluations to perform before termination.
 
 · Number of Runs   The number of independent runs to perform.
+
+· Number of Threads   The number of independent threads to divide the specified number of runs into.
 
 · Log Results?   If  YES , then every individual that is created will be stored in the file X-TOOLSS.log. If  NO , then a full record of individuals will not be kept.
 
