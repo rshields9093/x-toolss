@@ -146,12 +146,11 @@
             num = (String)ups.get(index);
             try {
                temp = converter.parseFloat(num);
-            }
-                catch (NumberFormatException nfe) {
-                  System.out.println("Error Reading Upper Ranges");
-                  System.out.println(nfe);
-                  temp = 0;
-               }
+            }catch (NumberFormatException nfe) {
+              System.out.println("Error Reading Upper Ranges");
+              System.out.println(nfe);
+              temp = 0;
+           }
             upperVals[i] = temp;	
          }
          upperBounds = upperVals;
