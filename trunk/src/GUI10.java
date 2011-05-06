@@ -787,7 +787,39 @@ import lib.genevot.*;
          error.pack();
          error.setLocationRelativeTo(null);
       	//end err msg*****************************
-      }  
+      }
+       
+       public void addModuleFile(String fileName){
+    	   if(isAdd && !(fileName).equals("")){
+               if(xlsFiles.indexOf(fileName) < 0){
+                  xlsFiles.add(fileCount, fileName);
+                  xtsDir = (new File(fileName)).getParent();
+                  //System.out.println(xtsDir);
+                  fileCount++;
+                  pg1Mod.setListData(xlsFiles);
+                  pg1AddFile.setText("");
+                  //pg1Add.setEnabled(false);
+                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
+                  infoLoss = true;
+                  isAdd = false;
+                  pg1Add.setText("Delete");
+               }
+               else{// Module already in list
+                  JOptionPane.showMessageDialog(pg1,
+                     					"The File\n"+
+                     					fileName+
+                     					"\nIs Already in the Module list.",
+                                    "",
+                                    JOptionPane.ERROR_MESSAGE); 								
+                  pg1AddFile.setText("");
+                  pg1Add.setEnabled(false);
+                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
+               }  
+            }
+            else if(!isAdd){
+               pg1Delete.doClick();
+            }
+       }
    	
    	//**********************************************************************
       //
@@ -811,40 +843,12 @@ import lib.genevot.*;
                fileName = file.getAbsolutePath();
                //System.out.println(fileName);
                pg1AddFile.setToolTipText(fileName);
+               
             }
          } 
          // ** Add Button - menu #1 **
          else if (e.getSource() == pg1Add){// Add module to list
-            if(isAdd && !(pg1AddFile.getText()).equals("")){
-               if(xlsFiles.indexOf(pg1AddFile.getText()) < 0){
-                  xlsFiles.add(fileCount, pg1AddFile.getText());
-                  xtsDir = (new File(pg1AddFile.getText())).getParent();
-                  //System.out.println(xtsDir);
-                  fileCount++;
-                  pg1Mod.setListData(xlsFiles);
-                  pg1AddFile.setText("");
-                  //pg1Add.setEnabled(false);
-                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
-                  infoLoss = true;
-                  isAdd = false;
-                  pg1Add.setText("Delete");
-               }
-               else{// Module already in list
-                  JOptionPane.showMessageDialog(pg1,
-                     					"The File\n"+
-                                    pg1AddFile.getText()+
-                     					"\nIs Already in the Module list.",
-                                    "",
-                                    JOptionPane.ERROR_MESSAGE); 								
-                  pg1AddFile.setText("");
-                  pg1Add.setEnabled(false);
-                  pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
-               }  
-            }
-            else if(!isAdd){
-               pg1Delete.doClick();
-            }
-            
+        	 addModuleFile(pg1AddFile.getText());
          }
          
          // ** Delete Button - menu #1 **
@@ -1175,10 +1179,9 @@ import lib.genevot.*;
             isAls = (isAlias.get(i)).toString();
             isInput = (varType.get(i)).toString();
          	
-         	
-            if(isAls.equals("-") && isConst.equals("f") && !isAls.equals("#") && !isConst.equals("#") && isInput.equals("input")){
-               geneticVars.add((variableNames.get(i)).toString());
-               geneticLoc.add(new Integer(location)); 
+         	if(isAls.equals("-") && isConst.equals("f") && !isAls.equals("#") && !isConst.equals("#") && isInput.equals("input")){
+            	geneticVars.add((variableNames.get(i)).toString());
+            	geneticLoc.add(new Integer(location)); 
             }
             if(!isAls.equals("#")){
                location++;
@@ -1190,6 +1193,12 @@ import lib.genevot.*;
             genRep = genRep + ((geneticVars.get(i)).toString()).trim();
             if(i < geneticVars.size()-1){
                genRep = genRep + ", ";
+            }
+            if(genRep.length() > 100){
+            	//If the genRep gets to long, can cause program to freeze.
+            	//Exit if too long...
+            	genRep += "...";
+            	i = geneticVars.size();
             }
          }
       	
@@ -1416,7 +1425,7 @@ import lib.genevot.*;
                      fileName = ((list.get(j)).toString()).trim();
                      
                      if((fileName.toLowerCase()).endsWith(allowedFileType)){
-                        if(!isAdd){
+                        /*if(!isAdd){
                            JOptionPane.showMessageDialog(pg1,
                               		"Error: Only one module can be added to Module List.",
                                     "",
@@ -1437,7 +1446,15 @@ import lib.genevot.*;
                            else{
                            //ERROR: TRYING TO ADD FILE ALREADY IN LIST
                            }
-                        }
+                        }*/
+                    	//System.out.println(fileName);
+                    	addModuleFile(fileName);
+                     }else{
+                    	 JOptionPane.showMessageDialog(pg1,
+                           		"Error: Module file must have an .xts extension.",
+                                 "",
+                                 JOptionPane.ERROR_MESSAGE); 
+                        break;
                      }
                   }
                   return;

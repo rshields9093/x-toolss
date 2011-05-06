@@ -1,13 +1,22 @@
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 import javax.swing.*;
 
-public class OptimizationsFrame extends JFrame implements WindowListener, ActionListener{
+public class OptimizationsFrame extends JFrame implements WindowListener, ActionListener, DropTargetListener{
 	JScrollPane scrollPane;
 	JPanel optPanel;
 	JButton addOptButton;
@@ -98,6 +107,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 		add(addOptButton, BorderLayout.SOUTH);
 		
 		addWindowListener(this);
+		DropTarget dt = new DropTarget(this, this);
 		
 		setVisible(true);
 	}
@@ -159,13 +169,78 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
+	public void actionPerformed(ActionEvent e) {
 		//New Optimization
 		//Disable the button so multiple optimizations aren't clicked.
 		setEnabled(false);
 		GUI10 optWizard = new GUI10(this);
 		optWizard.setVisible(true);
 		setEnabled(true);
+	}
+
+	@Override
+	public void dragEnter(DropTargetDragEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dragExit(DropTargetEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void dragOver(DropTargetDragEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void drop(DropTargetDropEvent e) {
+		try {
+            Transferable transfer = e.getTransferable();
+            DataFlavor[] flavors = transfer.getTransferDataFlavors();
+            
+            for (int i = 0; i < flavors.length; i++) {
+            
+               if (flavors[i].isFlavorJavaFileListType()) {
+                  e.acceptDrop(DnDConstants.ACTION_COPY);
+                  List list = (List) transfer.getTransferData(flavors[i]);
+                  
+                  for (int j = 0; j < list.size(); j++) {
+                     //add each file to Modules list
+                     String fileName = ((list.get(j)).toString()).trim();
+                     
+                     if((fileName.toLowerCase()).endsWith(".xts")){
+                         GUI10 wizard = new GUI10(this);
+                    	 wizard.setVisible(true);
+                    	 wizard.addModuleFile(fileName);
+                     }else{
+                    	 JOptionPane.showMessageDialog(null,
+                           		"Error: Module file must have an .xts extension.",
+                                 "",
+                                 JOptionPane.ERROR_MESSAGE); 
+                    	 break;
+                     }
+                  }
+                  return;
+               }
+            }
+            
+            //System.out.println("Drop failed: " + e);
+            e.rejectDrop();
+         }catch (Exception ex) {
+        	 ex.printStackTrace();
+        	 e.rejectDrop();
+         }
+		
+	}
+
+	@Override
+	public void dropActionChanged(DropTargetDragEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 }
