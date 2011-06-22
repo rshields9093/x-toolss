@@ -224,6 +224,7 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		
 		
 		timer.start();
+		setVisible(true);
 	}
 	private void remove(){
 		setVisible(false);

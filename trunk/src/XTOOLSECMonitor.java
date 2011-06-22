@@ -138,8 +138,7 @@ public class XTOOLSECMonitor implements ECMonitor{
 				ecResult.bestFitness.add(smallestFit);
 				ecResult.numFEBest = population.getNumFunctionEvaluations();	
 			}
-		}
-		else {
+		}else{
 			for(int i = 0; i < population.getSize(); i++) {
 				avgFit += population.getIndividual(i).getFitness();
 				if(population.getIndividual(i).compareTo(best) < 0) {
@@ -270,8 +269,7 @@ public class XTOOLSECMonitor implements ECMonitor{
 					}
 					bestFit = ((Particle)best).getFitness();
 				}
-			}
-			else {
+			}else{
 				bestFitStr = best.getPrintableFitness() + " : " + best.getChromosome();
 				tempString += "Evaluations: " + population.getNumFunctionEvaluations() + "      Total: " + maxFunEvals + "\n";
 				tempString += "Best: " + best.getChromosome() + " fit: " + best.getPrintableFitness() + "\n";
@@ -283,8 +281,10 @@ public class XTOOLSECMonitor implements ECMonitor{
 			}
 			frame.setBestIndividualInfo(frame.getBestIndividualInfo() + "Generation " + population.getNumGenerations() + " Best: " + bestFitStr + "\n", bestFit);
 			frame.setCurrentPopulationInfo(tempString);
-			frame.addPoint(new Point2D.Double(population.getNumGenerations(), avgFit), Color.blue);
-			frame.addPoint(new Point2D.Double(population.getNumGenerations(), bestFit), Color.red);
+			
+			if(avgFit != Double.POSITIVE_INFINITY) frame.addPoint(new Point2D.Double(population.getNumFunctionEvaluations(), avgFit), Color.blue);
+			
+			if(bestFit != Double.POSITIVE_INFINITY) frame.addPoint(new Point2D.Double(population.getNumFunctionEvaluations(), bestFit), Color.red);
 			
 		}
 		if(numFunEvals >= logInterval) {
