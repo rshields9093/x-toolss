@@ -52,13 +52,14 @@ import lib.genevot.UniformCrossoverOperator;
 public class XTOOLSS {
 	public static void main(String args[]) {
 		if(args.length == 0) {
-	         java.awt.EventQueue.invokeLater(
-	                new Runnable() {
-	                   public void run() {
-	                     OptimizationsFrame tempFrame = new OptimizationsFrame();
-	                     tempFrame.setVisible(true);
-	                  }
-	               });
+			java.awt.EventQueue.invokeLater(
+					new Runnable() {
+						public void run() {
+
+							OptimizationsFrame tempFrame = new OptimizationsFrame();
+							tempFrame.setVisible(true);
+						}
+					});
 		}
 		else if(args.length == 2) {
 			// Read the xts file and the ec file
@@ -67,38 +68,37 @@ public class XTOOLSS {
 			if(error.length() > 0) {
 				System.out.println(error);
 				return;
-			}
-			else {
-				 AppFile application = new AppFile();
-				 Vector modules = new Vector();
-				 modules.add(problem);
-		         application.setModuleArray(modules);
-		       
-		         String temp, r1, r2;
-		         Vector varValues = ((Module2)modules.get(0)).inputVarValues;
-		         Vector varTypes = ((Module2)modules.get(0)).getInputVariableTypes();
-		         Vector lowBounds = new Vector();
-		         Vector upBounds = new Vector();
-		         for(int i = 0; i < varValues.size(); i++){	         
-		            temp = (String)varValues.get(i);
-		            temp = temp.replace('[', ' ');
-		            temp = temp.replace(']', ' ');
-		            temp = temp.trim();
-		            r1 = temp.substring(0, temp.indexOf(".."));
-		            r2 = temp.substring(temp.indexOf("..") + 2, temp.length());
-		            r1.trim();
-		            r2.trim();
-		            lowBounds.add(r1);
-		            upBounds.add(r2);
-		         }
-		            	
-		         application.setLowerBounds(lowBounds);  
-		         application.setUpperBounds(upBounds);
-				 Interval[] interval = new Interval[lowBounds.size()];
-				 boolean canUsePSO = true;
-				 double[] minForPSO = new double[interval.length];
-				 double[] maxForPSO = new double[interval.length];
-		         for(int i = 0; i < interval.length; i++) {
+			}else{
+				AppFile application = new AppFile();
+				Vector modules = new Vector();
+				modules.add(problem);
+				application.setModuleArray(modules);
+
+				String temp, r1, r2;
+				Vector varValues = ((Module2)modules.get(0)).inputVarValues;
+				Vector varTypes = ((Module2)modules.get(0)).getInputVariableTypes();
+				Vector lowBounds = new Vector();
+				Vector upBounds = new Vector();
+				for(int i = 0; i < varValues.size(); i++){	         
+					temp = (String)varValues.get(i);
+					temp = temp.replace('[', ' ');
+					temp = temp.replace(']', ' ');
+					temp = temp.trim();
+					r1 = temp.substring(0, temp.indexOf(".."));
+					r2 = temp.substring(temp.indexOf("..") + 2, temp.length());
+					r1.trim();
+					r2.trim();
+					lowBounds.add(r1);
+					upBounds.add(r2);
+				}
+
+				application.setLowerBounds(lowBounds);  
+				application.setUpperBounds(upBounds);
+				Interval[] interval = new Interval[lowBounds.size()];
+				boolean canUsePSO = true;
+				double[] minForPSO = new double[interval.length];
+				double[] maxForPSO = new double[interval.length];
+				for(int i = 0; i < interval.length; i++) {
 					String dataType = (String)varTypes.elementAt(i);
 					if(dataType.equalsIgnoreCase("boolean") || dataType.equalsIgnoreCase("bool")) {
 						interval[i] = new Interval(Interval.Type.BOOLEAN, new Boolean(false), new Boolean(true));
@@ -130,24 +130,24 @@ public class XTOOLSS {
 						minForPSO[i] = min;
 						maxForPSO[i] = max;
 					}
-		         }
+				}
 
 
-		         XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
+				XTOOLSEvaluationFunction xtoolsEvalFun = new XTOOLSEvaluationFunction(application);
 				XTOOLSRunnable ecThread = readECFile(args[1], interval, canUsePSO, minForPSO, maxForPSO, xtoolsEvalFun);
-				 ecThread.start();
-				 
-				 while(ecThread.isAlive());
-				 System.out.println("X-TOOLSS has finished.");
+				ecThread.start();
+
+				while(ecThread.isAlive());
+				System.out.println("X-TOOLSS has finished.");
 			}
-							
+
 		}
 		else {
 			System.out.println("USAGE: java -jar xtoolss.jar");
 			System.out.println("       java -jar xtoolss.jar [xts_file] [ec_file]");
 		}
-  }
-	
+	}
+
 	public static XTOOLSRunnable readECFile(String filename, Interval[] interval, boolean canUsePSO, double[] minForPSO, double[] maxForPSO, XTOOLSEvaluationFunction xtoolsEvalFun) {
 		String ecName = "Steady-state GA with BLX";
 		int popSize = 20;
@@ -173,7 +173,7 @@ public class XTOOLSS {
 		String statFilename = "xtoolss.stat";
 		String useOneFifthRule = "NO";
 		boolean displayGUI = false;
-		
+
 		try {
 			BufferedReader in = null;
 			in = new BufferedReader(new FileReader(filename));
@@ -271,120 +271,120 @@ public class XTOOLSS {
 		if(logFileName <= 0) {
 			logFilename = null;
 		}
-		
-		 ThreadTerminator tt = new ThreadTerminator();
-		 MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numFunEvals, tt);
-		 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(null, displayGUI, logInterval, numFunEvals, tt, logFilename, outFilename);
-		 XTOOLSMigrationOperator migOp = null;
-		 if(memespaceIP.length() > 0 && memespacePort > 0) {
-			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort, (float)migrationRate);
-		 }
-		 else {
-			migOp = new XTOOLSMigrationOperator("", 0, 0.0f);		 
-		 }
 
-		
-		 Population population = null;
-		 ParentSelection parentSelection = null;
-		 RecombinationOperator recombinationOp = null;
-		 MutationOperator mutationOp = null;
-		 SurvivorSelection survivorSelection = null;
-		 
-         if(ecName.equalsIgnoreCase("PSO")) {
-        	 	if(canUsePSO) {
-		            boolean useCC = (constCoeff > 0)? true : false;
-		            ParticleSwarmOptimization pso = new ParticleSwarmOptimization(popSize, hoodSize, minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
-					XTOOLSRunnable ecThread = new XTOOLSRunnable(pso, numRuns, tt, statFilename, false);
-					return ecThread;
-				}
-				else {
-					System.out.println("You must have only float or double inputs to use PSO.");
-					return null;
-				}
-		 }
-		 else 
-		 {
-			 /*
-			  * User is running a GEC (non particle swarm)
-			  */
+		ThreadTerminator tt = new ThreadTerminator();
+		MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numFunEvals, tt);
+		XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(null, displayGUI, logInterval, numFunEvals, tt, logFilename, outFilename);
+		XTOOLSMigrationOperator migOp = null;
+		if(memespaceIP.length() > 0 && memespacePort > 0) {
+			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort, (float)migrationRate);
+		}
+		else {
+			migOp = new XTOOLSMigrationOperator("", 0, 0.0f);		 
+		}
+
+
+		Population population = null;
+		ParentSelection parentSelection = null;
+		RecombinationOperator recombinationOp = null;
+		MutationOperator mutationOp = null;
+		SurvivorSelection survivorSelection = null;
+
+		if(ecName.equalsIgnoreCase("PSO")) {
+			if(canUsePSO) {
+				boolean useCC = (constCoeff > 0)? true : false;
+				ParticleSwarmOptimization pso = new ParticleSwarmOptimization(popSize, hoodSize, minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
+				XTOOLSRunnable ecThread = new XTOOLSRunnable(pso, numRuns, tt, statFilename, false);
+				return ecThread;
+			}
+			else {
+				System.out.println("You must have only float or double inputs to use PSO.");
+				return null;
+			}
+		}
+		else 
+		{
+			/*
+			 * User is running a GEC (non particle swarm)
+			 */
 			if(ecName.equalsIgnoreCase("Standard EP")) {
 				EPOperators epOps = new EPOperators(false, false, etaMutationRate);
 				parentSelection = epOps;
 				recombinationOp = epOps;
 				mutationOp = new GaussianMutationOperator(1.0, mutationRate, mutationRange);
 				survivorSelection = new MuPlusLambdaSelection();
-	         }
-	         else if(ecName.equalsIgnoreCase("Continuous Standard EP")) {
+			}
+			else if(ecName.equalsIgnoreCase("Continuous Standard EP")) {
 				EPOperators epOps = new EPOperators(true, false, etaMutationRate);
 				parentSelection = epOps;
 				recombinationOp = epOps;
 				mutationOp = new GaussianMutationOperator(1.0, mutationRate, mutationRange);
 				survivorSelection = new MuPlusLambdaSelection();
-	         }
-	         else if(ecName.equalsIgnoreCase("Meta-EP")) {
+			}
+			else if(ecName.equalsIgnoreCase("Meta-EP")) {
 				EPOperators epOps = new EPOperators(false, true, etaMutationRate);
 				parentSelection = epOps;
 				recombinationOp = epOps;
 				mutationOp = epOps;
 				survivorSelection = new MuPlusLambdaSelection();
-	         }
-	         else if(ecName.equalsIgnoreCase("Continuous Meta-EP")) {
+			}
+			else if(ecName.equalsIgnoreCase("Continuous Meta-EP")) {
 				EPOperators epOps = new EPOperators(true, true, etaMutationRate);
 				parentSelection = epOps;
 				recombinationOp = epOps;
 				mutationOp = epOps;
 				survivorSelection = new MuPlusLambdaSelection();
-	         }
-	         else if(ecName.equalsIgnoreCase("Steady-state GA with BLX")) {
+			}
+			else if(ecName.equalsIgnoreCase("Steady-state GA with BLX")) {
 				parentSelection = new TournamentSelection(2, 2);
 				survivorSelection = new SteadyStateSelection();
 				recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-	         }
-	         else if(ecName.equalsIgnoreCase("Generational GA with BLX")) {
+			}
+			else if(ecName.equalsIgnoreCase("Generational GA with BLX")) {
 				parentSelection = new TournamentSelection(2, 2);
 				survivorSelection = new GenerationalSelection(numElites);
 				recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-	         }
-	         else if(ecName.equalsIgnoreCase("Steady-generational GA with BLX")) {
+			}
+			else if(ecName.equalsIgnoreCase("Steady-generational GA with BLX")) {
 				parentSelection = new TournamentSelection(2, 2);
 				survivorSelection = new SteadyGenerationalSelection(1);
 				recombinationOp = new BLXCrossoverOperator(crossoverUsageRate, blxAlpha);
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-	         }
-	         else if(ecName.equalsIgnoreCase("Steady-state GA")) {
+			}
+			else if(ecName.equalsIgnoreCase("Steady-state GA")) {
 				parentSelection = new TournamentSelection(2, 2);
 				survivorSelection = new SteadyStateSelection();
 				recombinationOp = new UniformCrossoverOperator(crossoverUsageRate);
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
-	         }
-	         else if(ecName.equalsIgnoreCase("Generational DEA")) {
+			}
+			else if(ecName.equalsIgnoreCase("Generational DEA")) {
 				parentSelection = new TournamentSelection(2, (popSize - numElites) * 2);
 				survivorSelection = new GenerationalSelection(numElites);
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
 				recombinationOp = new DEOperators(true, phi);
-	         }
-	         else if(ecName.equalsIgnoreCase("Steady-state DEA")) {
+			}
+			else if(ecName.equalsIgnoreCase("Steady-state DEA")) {
 				parentSelection = new TournamentSelection(2, (popSize - numElites) * 2);
 				survivorSelection = new SteadyStateSelection();
 				mutationOp = new GaussianMutationOperator(mutationUsageRate, mutationRate, mutationRange);
 				recombinationOp = new DEOperators(false, phi);
-	         }
-	         else if(ecName.equalsIgnoreCase("Elitist EDA")) {
+			}
+			else if(ecName.equalsIgnoreCase("Elitist EDA")) {
 				EDAOperators edaOps = new EDAOperators(numElites);
 				parentSelection = edaOps;
 				survivorSelection = edaOps;
 				mutationOp = edaOps;
 				recombinationOp = edaOps;
-	         }
-			 
-			 OneFifthRule oneFifthRule = (useOneFifthRule.equalsIgnoreCase("YES"))? new OneFifthRule() : null;
-	         population = new Population(popSize, interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
-			 XTOOLSRunnable ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns, tt, statFilename, false, oneFifthRule);
-			 return ecThread;
-         }
-	
+			}
+
+			OneFifthRule oneFifthRule = (useOneFifthRule.equalsIgnoreCase("YES"))? new OneFifthRule() : null;
+			population = new Population(popSize, interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
+			XTOOLSRunnable ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numRuns, tt, statFilename, false, oneFifthRule);
+			return ecThread;
+		}
+
 	}
 
 }

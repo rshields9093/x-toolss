@@ -37,7 +37,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 		 * when the user clicks the "New Optimization"
 		 * button.
 		 */
-		GUI10 temp = new GUI10(this);
+		OptimizationWizard temp = new OptimizationWizard(this);
 		if(temp != null) temp.setTitle("This will be removed...");
 		temp = null;
 		
@@ -173,7 +173,7 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
 		//New Optimization
 		//Disable the button so multiple optimizations aren't clicked.
 		setEnabled(false);
-		GUI10 optWizard = new GUI10(this);
+		OptimizationWizard optWizard = new OptimizationWizard(this);
 		optWizard.setVisible(true);
 		setEnabled(true);
 	}
@@ -213,9 +213,10 @@ public class OptimizationsFrame extends JFrame implements WindowListener, Action
                      String fileName = ((list.get(j)).toString()).trim();
                      
                      if((fileName.toLowerCase()).endsWith(".xts")){
-                         GUI10 wizard = new GUI10(this);
+                         OptimizationWizard wizard = new OptimizationWizard(this);
                     	 wizard.setVisible(true);
                     	 wizard.addModuleFile(fileName);
+                    	 wizard.getNextButton().doClick();
                      }else{
                     	 JOptionPane.showMessageDialog(null,
                            		"Error: Module file must have an .xts extension.",

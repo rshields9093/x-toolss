@@ -20,6 +20,7 @@
  */
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -73,6 +74,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
@@ -82,7 +84,7 @@ import javax.swing.event.ListSelectionListener;
 import lib.genevot.*;
    
     
-    public class GUI10 extends JFrame implements ActionListener, DropTargetListener
+    public class OptimizationWizard extends JFrame implements ActionListener, DropTargetListener
    {
       
     	ThreadTerminator tt;
@@ -123,12 +125,6 @@ import lib.genevot.*;
      	
         private JFrame pg1, error, pg3, currentFrame;
         
-        ImageIcon nextIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("next.gif")));
-        ImageIcon backIcon = null;//new ImageIcon(Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("back.gif")));
-     
-        Image minIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("CEV1.jpg"));
-        Image errIcon = null;//Toolkit.getDefaultToolkit().getImage(java.net.URLClassLoader.getSystemResource("err1.jpg"));
-        	
         EtchedBorder b1;
         boolean infoLoss;   
         
@@ -190,7 +186,7 @@ import lib.genevot.*;
         JMenuItem newFile, open, exitMenu;
         
         
-      public GUI10(OptimizationsFrame optimizationsFrame) {
+      public OptimizationWizard(OptimizationsFrame optimizationsFrame) {
     	 optFrame = optimizationsFrame;
          init();
       }
@@ -398,10 +394,10 @@ import lib.genevot.*;
          pg1MoveDown.setPreferredSize(new java.awt.Dimension(100, 25));
          pg1MoveDown.addActionListener(this);
          
-         pg1Back = new JButton("    Back    ", backIcon); //, backIcon
+         pg1Back = new JButton("    Back    ", null); //, backIcon
          pg1Back.setEnabled(false);  
       	
-         pg1Next = new JButton("    Next    ", nextIcon); //, nextIcon
+         pg1Next = new JButton("    Next    ", null); //, nextIcon
          pg1Next.setVerticalTextPosition(AbstractButton.CENTER); 
          pg1Next.setHorizontalTextPosition(AbstractButton.LEADING);
          pg1Next.addActionListener(this);
@@ -531,10 +527,10 @@ import lib.genevot.*;
          genetics = new JTextField(50);
          genetics.setEditable(false);
         
-         pg2Back = new JButton("    Back    ", backIcon);
+         pg2Back = new JButton("    Back    ", null);
          //pg2Back.addActionListener(new SwitchFrames( pg2, pg1 ));	
          pg2Back.addActionListener(this);
-         pg2Next = new JButton("    Next    ", nextIcon);
+         pg2Next = new JButton("    Next    ", null);
          pg2Next.addActionListener(this);
       }
       
@@ -592,9 +588,9 @@ import lib.genevot.*;
                                        JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
             
          //MENU 3 BUTTONS
-         pg3Back = new JButton("    Edit    ", backIcon); 
+         pg3Back = new JButton("    Edit    ", null); 
          pg3Back.addActionListener(this);
-         pg3Next = new JButton("    Execute", nextIcon);
+         pg3Next = new JButton("    Execute", null);
          pg3Next.setVerticalTextPosition(AbstractButton.CENTER); 
          pg3Next.setHorizontalTextPosition(AbstractButton.LEADING);
          pg3Next.addActionListener(this);
@@ -770,7 +766,7 @@ import lib.genevot.*;
        private void setupDialogs(){
          //set up error msg************************
          error = new JFrame("Error");
-         error.setIconImage(errIcon);
+         error.setIconImage(null);
          error.setResizable(false);
          errorPan = new JPanel();
          errorPan.setLayout(new BoxLayout(errorPan, BoxLayout.Y_AXIS));
@@ -789,7 +785,7 @@ import lib.genevot.*;
       	//end err msg*****************************
       }
        
-       public void addModuleFile(String fileName){
+       public boolean addModuleFile(String fileName){
     	   if(isAdd && !(fileName).equals("")){
                if(xlsFiles.indexOf(fileName) < 0){
                   xlsFiles.add(fileCount, fileName);
@@ -803,6 +799,7 @@ import lib.genevot.*;
                   infoLoss = true;
                   isAdd = false;
                   pg1Add.setText("Delete");
+                  return true;
                }
                else{// Module already in list
                   JOptionPane.showMessageDialog(pg1,
@@ -814,11 +811,14 @@ import lib.genevot.*;
                   pg1AddFile.setText("");
                   pg1Add.setEnabled(false);
                   pg1AddFile.setToolTipText("Press \"Browse\" to select a file.");
+                  return false;
                }  
             }
             else if(!isAdd){
                pg1Delete.doClick();
+               return false;
             }
+    	   return false;
        }
    	
    	//**********************************************************************
@@ -834,7 +834,7 @@ import lib.genevot.*;
       	
          // ** Browse Button - menu #1 **
          if (e.getSource() == pg1Browse) { 
-            int returnVal = fc.showOpenDialog(GUI10.this);
+            int returnVal = fc.showOpenDialog(OptimizationWizard.this);
          
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                File file = fc.getSelectedFile();
@@ -1142,6 +1142,7 @@ import lib.genevot.*;
                                     JOptionPane.ERROR_MESSAGE); 
             }
             else{
+               optFrame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
                pg1.setVisible(false);
                pg3.setVisible(false);
                
@@ -1149,6 +1150,7 @@ import lib.genevot.*;
                if(numThreads>numRuns) numThreads = numRuns;
                int numRunsPerThread = numRuns/numThreads;
                int leftoverRuns = numRuns%numThreads;
+               
                for(int i = 0; i < numThreads; i++){
             	   if(leftoverRuns > 0){
             		   executeApp(numRunsPerThread + 1);
@@ -1156,7 +1158,9 @@ import lib.genevot.*;
             	   }else{
             		   executeApp(numRunsPerThread);
             	   }
+            	   
                }
+               optFrame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
          }
 		 else if(e.getSource() == gaSelect) {
@@ -1448,7 +1452,11 @@ import lib.genevot.*;
                            }
                         }*/
                     	//System.out.println(fileName);
-                    	addModuleFile(fileName);
+                    	if(addModuleFile(fileName)){
+                    		System.out.println("Successfully added module file...");
+                    	}else{
+                    		System.out.println("Adding of module file unsuccessfull.");
+                    	}
                      }else{
                     	 JOptionPane.showMessageDialog(pg1,
                            		"Error: Module file must have an .xts extension.",
@@ -1511,7 +1519,7 @@ import lib.genevot.*;
       // FILE SAVE
       //
       //**********************************************************************
-       public boolean saveFile(){
+       public boolean saveFile(Module2 module){
          JFileChooser fc2;
          MyFilter filter2;
          fc2 = new JFileChooser();
@@ -1529,7 +1537,7 @@ import lib.genevot.*;
             askAgain = false;
             isSaved = false; 
             okToSave = true;
-            int returnVal = fc2.showSaveDialog(GUI10.this);
+            int returnVal = fc2.showSaveDialog(OptimizationWizard.this);
          
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                file = fc2.getSelectedFile();
@@ -1577,13 +1585,13 @@ import lib.genevot.*;
                   //modules
                      fw.write("m: \n");
                      for(int i = 0; i < modules.size(); i++){
-                        fw.write(((Module2)(modules.get(i))).getFilePath()+"\n");
+                        fw.write(module.getFilePath()+"\n");
                      }
                      fw.write(";\n");
                   //variables
                      fw.write("v: ");
                      for(int f = 0; f < isConstant.size(); f++){
-                        fw.write((isConstant.get(f)).toString()+" ");
+                        fw.write((module.getInputVariables().get(f)).toString()+" ");
                      }
                      fw.write(";\na: ");
                   //aliases
@@ -1618,14 +1626,7 @@ import lib.genevot.*;
          return isSaved;
       }
    	   	
-   	//**********************************************************************
-      //
-      // MENU SUPPORT
-      //
-      //**********************************************************************
-       
-   	
-       private String createWorkingDir(String curDir, String runsFolderName){
+   	  private String createWorkingDir(String curDir, String runsFolderName){
     	   //Finds unique working directory name, creates working directory, and copies all 
     	   //files/folders (except [runsFolerName]) into working dir.
     	   //Returns working directory path.
@@ -1749,6 +1750,7 @@ import lib.genevot.*;
     	   /*
     	    * This function executes a single independent optimization.
     	    */
+    	 
     	 workingDir = createWorkingDir(xtsDir, "X-TOOLSS_RUNS");
     	 Module2 oldMod = (Module2) modules.get(0);
     	 
@@ -2798,6 +2800,10 @@ import lib.genevot.*;
 	
        public XTOOLSECMonitor getMonitor(){
     	   return xtoolsECMon;
+       }
+       
+       public JButton getNextButton(){
+    	   return pg1Next;
        }
        
        public Population getPopulation(){
