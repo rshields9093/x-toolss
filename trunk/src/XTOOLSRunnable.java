@@ -90,7 +90,7 @@ public class XTOOLSRunnable extends Thread {
 			
 			ECResult result = null;
 			if(pso == null) {
-				ecMonitor.initialize();
+//CSA				ecMonitor.initialize();
 				population.initialize();
 				result = population.evolve(termCrit, ecMonitor, onlineAdapt);
 				

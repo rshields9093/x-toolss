@@ -19,6 +19,11 @@
  * along with X-TOOLSS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.demos.MultiTracing;
+import info.monitorenter.gui.chart.demos.MultiTracing.AddPaintRemoveThread;
+import info.monitorenter.gui.chart.traces.Trace2DSimple;
+import java.awt.Component;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,8 +31,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.awt.geom.Point2D;
 import java.awt.Color;
+import java.io.File;
+import java.lang.String;
+import java.util.Arrays;
+import java.util.Vector;
 
 import javax.swing.JFrame;
+import java.util.LinkedList;
+import javax.swing.JTabbedPane;
 
 import lib.genevot.*;
 
@@ -296,55 +307,59 @@ public class XTOOLSECMonitor implements ECMonitor{
 			optPanel.updateData();
 		}
 //		System.out.println("Mutation Rate (" + population.getNumGenerations() + "): " + population.getMutationOperator().getMutationRate());
-		return ecResult;
-	}
+    return ecResult;
+  }
+  public boolean isDisplayed() {
+    return (frame != null);
+  }
 
-	public boolean isDisplayed() {
-		return (frame != null);
-	}
-	
-	public int getNumFunctEval(){
-		return maxFunEvals;
-	}
-	
-	public int getCompFunctEval(){
-		return (logInterval*numIntervals)+numFunEvals;
-	}
-	
-	public void initialize() {
-		ecResult = new ECResult();
-		numFunEvals = 0;
-		lastPopFunEvals = 0;
-		if(frame != null) frame.clearPoints();
-	}
-	
-	public void endOptimization() {
-		threadTerminator.killThread = true;
-		if(logfile != null) {
-			logfile.close();
-		}
-		if(outfile != null) {
-			outfile.close();
-		}
-	}
-	/*
-	//This function is no longer needed, window can't be closed, event never fires.
-	public void propertyChange(PropertyChangeEvent event) {
-		if(event.getPropertyName().equals("WindowClosed")) {
-			endOptimization();
-		}
-	}
-	*/
+  public int getNumFunctEval() {
+    return maxFunEvals;
+  }
 
-	public JFrame getFrame() {
-		return frame;
-	}
+  public int getCompFunctEval() {
+    return (logInterval * numIntervals) + numFunEvals;
+  }
 
-	public ECResult getLastResult() {
-		return ecResult;
-	}
+  public void initialize() {
+    ecResult = new ECResult();
+    numFunEvals = 0;
+    lastPopFunEvals = 0;
+    if (frame != null) {
+      frame.clearPoints();
+    }
+  }
 
-	public void setOptPanel(OptimizationPanel tempOptPanel) {
-		optPanel = tempOptPanel;
-	}
+  public void endOptimization() {
+    threadTerminator.killThread = true;
+    if (logfile != null) {
+      logfile.close();
+    }
+    if (outfile != null) {
+      outfile.close();
+    }
+    if(tmpFile != null) {
+      tmpFile.close();
+    }
+  }
+  /*
+  //This function is no longer needed, window can't be closed, event never fires.
+  public void propertyChange(PropertyChangeEvent event) {
+  if(event.getPropertyName().equals("WindowClosed")) {
+  endOptimization();
+  }
+  }
+   */
+
+  public JFrame getFrame() {
+    return frame.newResultsFrame;
+  }
+
+  public ECResult getLastResult() {
+    return ecResult;
+  }
+
+  public void setOptPanel(OptimizationPanel tempOptPanel) {
+    optPanel = tempOptPanel;
+  }
 }
