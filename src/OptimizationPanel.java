@@ -227,7 +227,7 @@ public class OptimizationPanel extends JPanel implements ActionListener{
 		setVisible(true);
 	}
 	private void remove(){
-		setVisible(false);
+                setVisible(false);
 		this.removeAll();
 		result = null;
 		System.gc();
