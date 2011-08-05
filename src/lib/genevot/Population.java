@@ -167,7 +167,7 @@ public class Population implements Cloneable {
 	public int getNumGenerations() {
 		return numGenerations;	
 	}
-	
+
 	/** This method returns the current number of function evaluations that have been processed by the population.
 	 * 
 	 * @since 1.0
@@ -246,7 +246,7 @@ public class Population implements Cloneable {
 	}
 	 
 	public ECResult evolve(TerminationCriteria terminationCriteria, ECMonitor ecMon, OnlineAdaptation oa) {
-		ecMon.initialize();
+//CSA		ecMon.initialize();
 		numGenerations = 0;
 		numFunctionEvaluations = 0;
 		evaluate(individual, terminationCriteria);
