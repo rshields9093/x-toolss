@@ -369,6 +369,11 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
 
   /** Speaking names for axis constants - used for debugging only. */
   public static final String[] AXIX_CONSTANT_NAMES = new String[] {"dummy", "X", "Y", "X,Y" };
+    /* Used for naming the x-axis during instantiation
+   * 
+   */
+   private String xTitle="X";
+
 
   /**
    * Constant describing the bottom side of the chart.
@@ -794,12 +799,19 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
     }
 
   };
+  public Chart2D(String xTitle) {
+    this.xTitle = xTitle;
+    init();
+  }
+  public Chart2D() {
+    init();
+  }
 
   /**
    * Creates a new chart.
    * <p>
    */
-  public Chart2D() {
+  private void init() {
 
     // initialize the axis collections:
     this.m_axesXBottom = new LinkedList<IAxis>();
@@ -810,7 +822,8 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
     this.setTracePointProvider(new TracePointProviderDefault());
     AAxis axisX = new AxisLinear();
     this.setAxisXBottom(axisX, 0);
-    axisX.getAxisTitle().setTitle("X");
+    axisX.getAxisTitle().setTitle(this.xTitle);
+    this.xTitle = "X"; // reset back to "X"
 
     AAxis axisY = new AxisLinear();
     this.setAxisYLeft(axisY, 0);
