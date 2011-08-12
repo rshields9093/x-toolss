@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.text.Position.Bias;
 
 public class GraphDialog extends javax.swing.JDialog {
   private String[] graphVarNames;
@@ -37,19 +38,7 @@ public class GraphDialog extends javax.swing.JDialog {
          * each computation (ie. evolution).
          */
         listModelXvalue = new DefaultListModel();
-/*        listModelXvalue.addElement("Fred Smed");
-        listModelXvalue.addElement("Sammy T");
-        listModelXvalue.addElement("Elvira");
-*/
         listModelYvalue = new DefaultListModel();
- /*       listModelYvalue.addElement("Jane Doe");
-        listModelYvalue.addElement("John Smith");
-        listModelYvalue.addElement("Kathy Green");
-*/
- //        for(int i=0;graphVarNames != null; i++) {
-//          yValuesAvail.addElement((Object)graphVarNames.elementAt(i));
-//        }
-       // yValuesAvail.addItem((Object)graphVarNames);
         initComponents();
     }
 
@@ -109,7 +98,7 @@ public class GraphDialog extends javax.swing.JDialog {
     jLabel2.setText("Select X-Value");
 
     xValueAdded.setEditable(false);
-    xValueAdded.setText("numGenerations");
+    xValueAdded.setText("Evaluation");
     xValueAdded.setActionCommand("<Not Set>");
 
     jButton3_plot.setText("Plot");
@@ -242,11 +231,30 @@ public class GraphDialog extends javax.swing.JDialog {
 
     private void jButton1AddItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1AddItemActionPerformed
       // This is where you add the y-value to the list
+      int iDx;
       Object o = yValuesAvail.getSelectedItem();
-      int pos = yValuesAdded.getModel().getSize();
-      listModelYvalue.insertElementAt(o, pos);
+      if(firstItemAdded == true) {
+        iDx = yValuesAdded.getNextMatch(o.toString(), 0, Bias.Backward);
+      } else {
+        firstItemAdded = true;
+        iDx = -1;
+      }
+      if(iDx == -1) { // add to list
+        int pos = yValuesAdded.getModel().getSize();
+        listModelYvalue.insertElementAt(o, pos);
+      } else { // if it's not in list then print error
+       // print error message
+       if(duplicateNameDialog == null) { // get a new error window
+         java.awt.EventQueue.invokeLater(new Runnable() {
+              public void run() {
+                  Error_duplicate_name duplicateNameDialog = new Error_duplicate_name(new javax.swing.JFrame(), true);
+              }
+          });
+        } else { // make the existing box visible
+         duplicateNameDialog.setVisible(true);
+        }
     }//GEN-LAST:event_jButton1AddItemActionPerformed
-
+  }
     private void jButton5RemoveItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5RemoveItemActionPerformed
       int i = yValuesAdded.getSelectedIndex();
     Object remove = listModelYvalue.remove(i);
@@ -264,7 +272,7 @@ public class GraphDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void CloseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CloseButtonActionPerformed
-      // close dialog box
+      // close duplicateNameDialog box
       setVisible(false);
     }//GEN-LAST:event_CloseButtonActionPerformed
 
@@ -278,14 +286,14 @@ public class GraphDialog extends javax.swing.JDialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
- //               GraphDialog dialog = new GraphDialog(new javax.swing.JFrame(), true);
-//                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+ //               GraphDialog duplicateNameDialog = new GraphDialog(new javax.swing.JFrame(), true);
+//                duplicateNameDialog.addWindowListener(new java.awt.event.WindowAdapter() {
 //          @Override
 //                    public void windowClosing(java.awt.event.WindowEvent e) {
 //                        System.exit(0);
 //                    }
 //                });
-//                dialog.setVisible(true);
+//                duplicateNameDialog.setVisible(true);
             }
         });
     }
@@ -334,5 +342,7 @@ public LinkedList<String> getyValuesAdded() {
   // End of variables declaration//GEN-END:variables
   public String yVariables;
   public String xVariables;
+  private boolean firstItemAdded = false;
+  private Error_duplicate_name duplicateNameDialog = null;
 
 }
