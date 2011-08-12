@@ -22,6 +22,7 @@
 package info.monitorenter.gui.chart.demos;
 
 import info.monitorenter.gui.chart.Chart2D;
+import info.monitorenter.gui.chart.IAxis;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.rangepolicies.RangePolicyMinimumViewport;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
@@ -286,9 +287,10 @@ public final class MultiTracing {
   //protected ITrace2D trace; //CSA
 
   /** Defcon. */
-  public MultiTracing(JTabbedPane multiFrame) {
+  public MultiTracing(JTabbedPane multiFrame, String xTitle) {
     final java.util.Random rand = new java.util.Random();
-    this.m_chart = new Chart2D();
+    this.m_chart = new Chart2D(xTitle);
+    IAxis axisX = this.m_chart.getAxisX();
     this.m_chart.getAxisX().setPaintGrid(true);
     this.m_chart.getAxisY().setPaintGrid(true);
     this.m_chart.setBackground(Color.lightGray);

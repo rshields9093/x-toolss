@@ -244,7 +244,7 @@ public class XTOOLSECMonitor implements ECMonitor {
       this.xIndex = arrayLocation(xVarName);
       this.xVarName = xVarName;
 
-      this.chartPane = new MultiTracing(tabbedPane);
+      this.chartPane = new MultiTracing(tabbedPane, this.xVarName);
 
       for(int index=0, n = this.yVarNames.size(); index < n; index++) {
         //define color for each trace
