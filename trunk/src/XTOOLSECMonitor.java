@@ -29,7 +29,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.awt.Color;
 import java.io.File;
-import java.lang.String;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -55,31 +54,28 @@ public class XTOOLSECMonitor implements ECMonitor {
   private int numFunEvals;
   private int maxFunEvals;
   private int lastPopFunEvals;
-  private boolean newBest = true;
   private ThreadTerminator threadTerminator;
   protected LinkedList<Graph> graphs;
   protected generalGraph genGraph;
-  //CSA Temporary var
   int pos;
-  private String temp;
   private Module2 mod;
   private AppFile appFile;
   private double avgFit;
   private double bestFit;
   private Double numGenerations;
   private long elapsedTime, startTime;
-  private String tmpOutfile = "csaOut.csv";
-  private PrintWriter tmpFile;
-  private static boolean  headerWritten = false;
+  private String convergenceFilename = "convergence.csv";
+  private PrintWriter convergenceFile;
   private final String workingDir;
-  private static Integer graphNumber = 0; // Used by newGraph for tab names
+  private static LinkedList<Integer>graphNumber =  new LinkedList<Integer>(); // Used by newGraph for tab names
   private boolean bFirstPass = true;
   
 
 
 
-  public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval, int maxFunEvals, ThreadTerminator tt, String logFilename, Vector inputVarNames, Vector inputVarTypes, Module2 module, AppFile appFile, String workingDir, String outFilename) {
-    ecResult = new ECResult();
+//  public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval, int maxFunEvals, ThreadTerminator tt, String logFilename, Vector inputVarNames, Vector inputVarTypes, Module2 module, AppFile appFile, String workingDir, String outFilename) {
+public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval, int maxFunEvals, ThreadTerminator tt, String logFilename, Module2 module, AppFile appFile, String workingDir) {
+  ecResult = new ECResult();
     this.workingDir = workingDir;
     optPanel = op;
     startTime = System.currentTimeMillis();
@@ -112,10 +108,10 @@ public class XTOOLSECMonitor implements ECMonitor {
         System.err.println(e);
       }
     }
-    if(tmpFile == null) {
+    if(convergenceFile == null) {
       try {
-         String dirAndFile = workingDir+File.separator+tmpOutfile;
-         tmpFile = new PrintWriter(new FileOutputStream(dirAndFile));
+         String dirAndFile = workingDir+File.separator+convergenceFilename;
+         convergenceFile = new PrintWriter(new FileOutputStream(dirAndFile));
       } catch(IOException e) {
         System.err.println(e);
       }
@@ -145,12 +141,11 @@ public class XTOOLSECMonitor implements ECMonitor {
      * The example table below defines the format the data will be stored for plotting the graphs.
      */
     int[] rowSize = new int[3]; // contains 3 values. inputfile, outputfile, and calculated value row size
-    // NUM_GRAPHS can probably be removed. CSA
-    final static int NUM_GRAPHS = 5;       // maximum number of graphs
     final static int MAX_VARIABLES = 1000; // maximum number of variables
-    final static int MAX_TRACES = 5;
     //private static boolean bFirstGraph;      // used to identify when the first graph is created
     private boolean bFirstGraph=false;      // used to identify when the first graph is created
+    private boolean bGraphDeleted = false;   // used to identify when a graph has been deleted.
+    private int iGraphDisplayCnt = 0;       //
     
 
     /** setVarName is where the variable names are copied in a single array
@@ -209,6 +204,7 @@ public class XTOOLSECMonitor implements ECMonitor {
     int xIndex;        // position variable is located in value variable
     AddPaintRemoveThread xThread;
     String tabName;
+    CloseTabButton closeTabButton; // used to close graph window
 
     public Graph() {
       init();
@@ -228,32 +224,32 @@ public class XTOOLSECMonitor implements ECMonitor {
    * @param yVarNames
    * @param xVarNames
    */
-   public void newGraph(JTabbedPane tabbedPane, LinkedList<String> yVarNames, String xVarName) {
-      int[] color = {0x000000, 0xFFFFFF, 0x800000, 0xFF0000, 0x800080, 0xFF00FF, 
+    public void newGraph(JTabbedPane tabbedPane, LinkedList<String> yVarNames, String xVarName) {
+      int[] color = {0x000000, 0xFFFFFF, 0x800000, 0xFF0000, 0x800080, 0xFF00FF,
         0x008000, 0x00FF00, 0x808000, 0xFFFF00, 0x000080, 0x0000FF, 0x008080, 0x00FFFF};
       ITrace2D tmpTrace;
       AddPaintRemoveThread tmpThread;
       Color c;
       // locate index for the variables
-      for(int index=0, ySize = yVarNames.size(); index<ySize; index++) {
+      for (int index = 0, ySize = yVarNames.size(); index < ySize; index++) {
         String s = yVarNames.get(index);
         int iTmp = arrayLocation(s);
-          this.yIndex.add(iTmp);
-          this.yVarNames.add(yVarNames.get(index));  // add to instance
+        this.yIndex.add(iTmp);
+        this.yVarNames.add(yVarNames.get(index));  // add to instance
       }
       this.xIndex = arrayLocation(xVarName);
       this.xVarName = xVarName;
 
       this.chartPane = new MultiTracing(tabbedPane, this.xVarName);
 
-      for(int index=0, n = this.yVarNames.size(); index < n; index++) {
+      for (int index = 0, n = this.yVarNames.size(); index < n; index++) {
         //define color for each trace
-        if(index>14) {
-          int rem = index%13;
+        if (index > 14) {
+          int rem = index % 13;
           c = new Color(color[rem]);
         } else {
           c = new Color(color[index]);
-        }     
+        }
         tmpTrace = new Trace2DSimple();
         this.traces.add(tmpTrace);
         this.traces.get(index).setColor(c);
@@ -261,13 +257,37 @@ public class XTOOLSECMonitor implements ECMonitor {
         this.yThreads.add(index, tmpThread);
         this.yThreads.get(index).start();
       }
-      graphNumber++;
-      Component add = tabbedPane.add("Graph"+graphNumber.toString(), chartPane.m_chart);
-//      CloseTabButton closeTabButton = new CloseTabButton(tabbedPane, graphNumber + 1);
-      if(genGraph.bFirstGraph==false) {
-        genGraph.bFirstGraph=true;
+      graphNumber.add(genGraph.iGraphDisplayCnt++);
+      tabbedPane.add("Graph" + graphNumber.getLast().toString(), chartPane.m_chart);
+      // closeTabButton = new CloseTabButton(tabbedPane, graphNumber + 1);
+      if (genGraph.bGraphDeleted == true) {
+        genGraph.bGraphDeleted = false;
+        closeTabButton = new CloseTabButton(this, tabbedPane, graphNumber.indexOf(graphNumber.getLast()));
+      } else {
+        closeTabButton = new CloseTabButton(this, tabbedPane, graphNumber.indexOf(graphNumber.getLast()));
+
+      }
+
+      if (genGraph.bFirstGraph == false) {
+        genGraph.bFirstGraph = true;
       }
     }
+   
+
+   /** remove is used to decrement the number of graphs.
+    * 
+    */
+   protected void remove(int itemToRemove) {
+     genGraph.bGraphDeleted = true;
+     try {
+          graphNumber.remove(itemToRemove);
+          if(graphNumber.size() == 0) {  // reset bFirstGraph
+            genGraph.bFirstGraph = false;
+          }
+     } catch(IndexOutOfBoundsException e) {
+          System.err.println("Graph.remove:" + e);
+     }
+   }
 
     /** arrayLocation is the location (ie. index) of a variables location in the varName array.
    * This location for the name coincides with the location of the variable 
@@ -441,7 +461,7 @@ public class XTOOLSECMonitor implements ECMonitor {
     if(bFirstPass == true) {
       bFirstPass = false;
       String s = sDataTrkHdr();
-      tmpFile.println(s);
+      convergenceFile.println(s);
     }
     /*
      * Write to files (should only take place if log interval is same as numFunEvals)
@@ -459,7 +479,7 @@ public class XTOOLSECMonitor implements ECMonitor {
             sTmpDataTrkBest = numEvals + "," + elapsedTime + "," + best.getPrintableFitness() + "," + s1;
             // format data to be comma delimited
             s = chromoToString(((Particle)children[i]).getP());
-            tmpFile.println(sTmpDataTrkBest + ((Particle) children[i]).getPFitness() + "," + s1);
+            convergenceFile.println(sTmpDataTrkBest + ((Particle) children[i]).getPFitness() + "," + s1);
           }
         } else {
           for (int i = 0; i < population.getSize(); i++) {
@@ -468,7 +488,7 @@ public class XTOOLSECMonitor implements ECMonitor {
             sTmpDataTrkBest = numEvals + "," + elapsedTime + "," + best.getPrintableFitness() + "," + s;
             // format data to be comma delimited
             s = chromoToString(((Particle) population.getIndividual(i)).getChromosome());
-            tmpFile.println(sTmpDataTrkBest + ((Particle) population.getIndividual(i)).getFitness() + "," + s);
+            convergenceFile.println(sTmpDataTrkBest + ((Particle) population.getIndividual(i)).getFitness() + "," + s);
           }
         }
       } else {
@@ -485,7 +505,7 @@ public class XTOOLSECMonitor implements ECMonitor {
             // temp!!!
             sTmpDataTrkBest = sTmpDataTrkBest + children[i].getPrintableFitness() + "," + s;
             genGraph.value = strigToDoubleArr(sTmpDataTrkBest, ",");
-           tmpFile.println(sTmpDataTrkBest + children[i].getPrintableFitness() + "," + s);
+           convergenceFile.println(sTmpDataTrkBest + children[i].getPrintableFitness() + "," + s);
           }
         } else {
           for (int i = 0; i < population.getSize(); i++) {
@@ -497,12 +517,12 @@ public class XTOOLSECMonitor implements ECMonitor {
             // temp!!!
             sTmpDataTrkBest = sTmpDataTrkBest + population.getIndividual(i).getPrintableFitness() + "," + s;
             genGraph.value = strigToDoubleArr(sTmpDataTrkBest, ",");
-            tmpFile.println(sTmpDataTrkBest + population.getIndividual(i).getPrintableFitness() + "," + s);
+            convergenceFile.println(sTmpDataTrkBest + population.getIndividual(i).getPrintableFitness() + "," + s);
           }
         }
       }
       logfile.flush();
-      tmpFile.flush();
+      convergenceFile.flush();
     }
     if (outfile != null) {
       if (numFunEvals >= logInterval) {
@@ -596,9 +616,8 @@ public class XTOOLSECMonitor implements ECMonitor {
      
       // plot the items
       if(genGraph.bFirstGraph == true) {
-        int tSize;
-      //  tSize = graphs.get(0)yThreads.size();
-        tSize = graphs.get(0).yThreads.size();
+        //int tSize;
+        //tSize = graphs.get(0).yThreads.size();
         for(int graphIdx=0, graphSize=graphs.size(); graphIdx<graphSize; graphIdx++) {
           for(int thrIdx=0, thrSize=graphs.get(graphIdx).yThreads.size(); thrIdx<thrSize; thrIdx++) {
                       graphs.get(graphIdx).yThreads.get(thrIdx).updateData(genGraph.value[this.graphs.get(graphIdx).xIndex],
@@ -650,8 +669,8 @@ public class XTOOLSECMonitor implements ECMonitor {
     if (outfile != null) {
       outfile.close();
     }
-    if(tmpFile != null) {
-      tmpFile.close();
+    if(convergenceFile != null) {
+      convergenceFile.close();
     }
   }
   /*

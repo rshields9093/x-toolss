@@ -1939,7 +1939,7 @@ import lib.genevot.*;
 				mutationOp = edaOps;
 				recombinationOp = edaOps;
 	         }
-	            xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, inputVarNames, inputVarTypes, newMod, application, workingDir, outFilename);
+	            xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, newMod, application, workingDir);
 	         currentFrame = xtoolsECMon.getFrame();
 			 population = new Population(popSize.intValue(), interval, xtoolsEvalFun, parentSelection, recombinationOp, mutationOp, survivorSelection, migOp);
 			 ecThread = new XTOOLSRunnable(population, mfeTermination, xtoolsECMon, numberOfRuns, tt, statFilename, true, oneFifthRule);
@@ -1951,7 +1951,7 @@ import lib.genevot.*;
 		 else {
 			if(canUsePSO) {
 	            boolean useCC = (constCoeff.intValue() > 0)? true : false;
-	            xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, inputVarNames, inputVarTypes, newMod, application, workingDir, outFilename);
+	            xtoolsECMon = new XTOOLSECMonitor(tempOptPanel, true, logInterval.intValue(), numEval.intValue(), tt, logFilename, newMod, application, workingDir);
 	            currentFrame = xtoolsECMon.getFrame();
 	            pso = new ParticleSwarmOptimization(popSize.intValue(), neighborhoodSize.intValue(), minForPSO, maxForPSO, 2.05, 2.05, useCC, ParticleSwarmOptimization.ASYNCHRONOUS_UPDATE, xtoolsEvalFun, mfeTermination, xtoolsECMon, migOp);
 				ecThread = new XTOOLSRunnable(pso, numberOfRuns, tt, statFilename, true);

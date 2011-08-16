@@ -11,12 +11,16 @@ import javax.swing.JTabbedPane;
 
 class CloseTabButton extends JPanel implements ActionListener {
   private JTabbedPane pane;
-  public CloseTabButton(JTabbedPane pane, int index) {
+  XTOOLSECMonitor.Graph graph;
+  int itemIndex;
+
+  public CloseTabButton(XTOOLSECMonitor.Graph graph, JTabbedPane pane,int itemIndex) {
+    this.graph = graph;
     this.pane = pane;
     setOpaque(false);
     add(new JLabel(
-        pane.getTitleAt(index),
-        pane.getIconAt(index),
+        pane.getTitleAt(itemIndex+2),
+        pane.getIconAt(itemIndex+2),
         JLabel.LEFT));
     Icon closeIcon = new CloseIcon();
     JButton btClose = new JButton(closeIcon);
@@ -24,12 +28,13 @@ class CloseTabButton extends JPanel implements ActionListener {
         closeIcon.getIconWidth(), closeIcon.getIconHeight()));
     add(btClose);
     btClose.addActionListener(this);
-    pane.setTabComponentAt(index, this);
+    pane.setTabComponentAt(itemIndex+2, this);
   }
   public void actionPerformed(ActionEvent e) {
     int i = pane.indexOfTabComponent(this);
     if (i != -1) {
       pane.remove(i);
+      graph.remove(i-2);
     }
   }
 }
