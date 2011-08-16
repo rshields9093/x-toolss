@@ -19,6 +19,7 @@ public class Error_duplicate_name extends javax.swing.JDialog {
     public Error_duplicate_name(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+
         this.addWindowListener(new java.awt.event.WindowAdapter() {
         @Override
             public void windowClosing(java.awt.event.WindowEvent e) {

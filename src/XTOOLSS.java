@@ -274,7 +274,7 @@ public class XTOOLSS {
 		
 		 ThreadTerminator tt = new ThreadTerminator();
 		 MaxFunctionEvalTermination mfeTermination = new MaxFunctionEvalTermination(numFunEvals, tt);
-		 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(null, displayGUI, logInterval, numFunEvals, tt, logFilename, null,null,null,null,null,null);
+		 XTOOLSECMonitor xtoolsECMon = new XTOOLSECMonitor(null, displayGUI, logInterval, numFunEvals, tt, logFilename, null,null,null);
 		 XTOOLSMigrationOperator migOp = null;
 		 if(memespaceIP.length() > 0 && memespacePort > 0) {
 			migOp = new XTOOLSMigrationOperator(memespaceIP, memespacePort, (float)migrationRate);
