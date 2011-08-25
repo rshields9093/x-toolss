@@ -24,6 +24,7 @@ package info.monitorenter.gui.chart.demos;
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.IAxis;
 import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.rangepolicies.RangePolicyFixedViewport;
 import info.monitorenter.gui.chart.rangepolicies.RangePolicyMinimumViewport;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
 import info.monitorenter.gui.chart.views.ChartPanel;
@@ -100,9 +101,13 @@ public final class MultiTracing {
  //   private static int iGetArrayCnt;
     private int iGetArrayCnt;
     /* dDataX[] is set within updateData for teh x-value to be plotted */
-    private double dDataX[] = new double[CHART_ARR_SZ];
+//     = new double[CHART_ARR_SZ];
+//    /**  dDataY[] is the set within updateData for the y-value to be plotted */
+//     = new double[CHART_ARR_SZ];
+    /* dDataX[] is set within updateData for teh x-value to be plotted */
+    private double[] dDataX;
     /**  dDataY[] is the set within updateData for the y-value to be plotted */
-    private double dDataY[] = new double[CHART_ARR_SZ];
+    private double[] dDataY;
     /** fDisplayX is the x-value to display in the run method */
     private double dDisplayX;
     /** fDisplayY is the y-value to display in the run method */
@@ -110,7 +115,9 @@ public final class MultiTracing {
     /** bDisplayData is a boolean that is returned from getData within the run method */
     private boolean bDisplayData = false;
     /** CHART_ARR_SZ is the array size of the buffers affecting the charting */
-    private static final int CHART_ARR_SZ = 400;
+//    private static final int CHART_ARR_SZ = 400;
+    /** chartArrSize is the array size of the buffers affecting the charting */
+    private int chartArrSize;
 
     
 
@@ -134,7 +141,11 @@ public final class MultiTracing {
 //    public AddPaintRemoveThread(final Chart2D chart, final ITrace2D trace, final double[] data,
 //        final long sleep) {
     public AddPaintRemoveThread(final Chart2D chart, final ITrace2D trace,
-        final long sleep, String sThreadName) {
+        final long sleep, String sThreadName, int chartArrSize) {
+      this.chartArrSize = chartArrSize;
+      dDataX = new double[this.chartArrSize];
+      dDataY = new double[this.chartArrSize];
+
       this.m_innnerChart = chart;
       this.m_trace = trace;
 
@@ -203,7 +214,7 @@ public final class MultiTracing {
      * updating data from outside this class.
     */
     public synchronized void updateData(double x, double y) {
-    if(this.iArrayCnt >= (CHART_ARR_SZ-1)) {  // Don't let the buffer overrun.
+    if(this.iArrayCnt >= (chartArrSize-1)) {  // Don't let the buffer overrun.
       this.iArrayCnt = 0;
     }
     this.iArrayCnt++;
@@ -285,9 +296,9 @@ public final class MultiTracing {
   public Chart2D m_chart = null;  //CSA- changed from protected to public
   protected AddPaintRemoveThread thr = null; //CSA
   //protected ITrace2D trace; //CSA
-
+  
   /** Defcon. */
-  public MultiTracing(JTabbedPane multiFrame, String xTitle) {
+  public MultiTracing(JTabbedPane multiFrame, String xTitle, int graphSize, Float xMin, Float xMax) {
     final java.util.Random rand = new java.util.Random();
     this.m_chart = new Chart2D(xTitle);
     IAxis axisX = this.m_chart.getAxisX();
@@ -295,6 +306,13 @@ public final class MultiTracing {
     this.m_chart.getAxisY().setPaintGrid(true);
     this.m_chart.setBackground(Color.lightGray);
     this.m_chart.setGridColor(new Color(0xDD, 0xDD, 0xDD));
+
+    if (xMin != 0 && xMax != 0) {
+      this.m_chart.getAxisY().setRangePolicy(new RangePolicyFixedViewport(new Range(xMin, xMax)));
+      this.m_chart.getAxisX().setRangePolicy(new RangePolicyFixedViewport(new Range(0, graphSize)));
+      this.m_chart.getAxisY().scale();
+      this.m_chart.getAxisX().scale();
+    }
     // add WindowListener
  //   multiFrame.addWindowListener(new WindowAdapter() {
       /**

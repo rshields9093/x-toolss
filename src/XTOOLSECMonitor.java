@@ -23,6 +23,7 @@ import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.demos.MultiTracing;
 import info.monitorenter.gui.chart.demos.MultiTracing.AddPaintRemoveThread;
 import info.monitorenter.gui.chart.traces.Trace2DSimple;
+import info.monitorenter.util.Range;
 import java.awt.Component;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
@@ -35,6 +36,7 @@ import java.util.Vector;
 import javax.swing.JFrame;
 import java.util.LinkedList;
 import javax.swing.JTabbedPane;
+import java.util.regex.*;
 
 import lib.genevot.*;
 
@@ -69,6 +71,8 @@ public class XTOOLSECMonitor implements ECMonitor {
   private final String workingDir;
   private static LinkedList<Integer>graphNumber =  new LinkedList<Integer>(); // Used by newGraph for tab names
   private boolean bFirstPass = true;
+  private int graphSize;
+  private String[] sInVarBestCurr;
   
 
 
@@ -78,6 +82,7 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
   ecResult = new ECResult();
     this.workingDir = workingDir;
     optPanel = op;
+    graphSize = maxFunEvals;
     startTime = System.currentTimeMillis();
     if (showFrame) {
       graphs = new LinkedList<Graph>();
@@ -85,7 +90,7 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
       genGraph = new generalGraph();
       mod = (Module2)module;
       this.appFile = appFile;
-      genGraph.setVarName(sDataTrkHdr());
+      sDataTrkHdr(); // this puts the variables in place for the graphing utility
       // instantiate
       frame = new XTOOLSResultsFrame(this, maxFunEvals);
     } else {
@@ -153,16 +158,15 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
      * 
      */
     private void setVarName(String sVars) {
-    //  String[] otherPlotNames = {"avgFit", "bestFit"};
-      
       //Place String items into array
       String[] sArr = sVars.split(",");
-
+      for(int i=0; i<sArr.length; i++) {
+        String replaceAll = sArr[i].replaceAll(" ", "");
+        sArr[i] = replaceAll;
+      }
       varName = new String[sArr.length];
       // add Data Tracker data to array
       System.arraycopy(sArr, 0, varName, 0, sArr.length);
-      // add calculated names to varName
-    //  System.arraycopy(otherPlotNames, 0, varName, sArr.length, otherPlotNames.length);
     }
     
 
@@ -179,7 +183,7 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
     //  writeVariables();
     }
 
-   }
+   }  // END: generalGraph class
 
    /** addGraph is used to add a new graph to the linked list
     * 
@@ -225,6 +229,9 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
    * @param xVarNames
    */
     public void newGraph(JTabbedPane tabbedPane, LinkedList<String> yVarNames, String xVarName) {
+      Float[] lowerUpperBounds = new Float[2];
+      String[] yVarsSelected;
+      String s2;
       int[] color = {0x000000, 0xFFFFFF, 0x800000, 0xFF0000, 0x800080, 0xFF00FF,
         0x008000, 0x00FF00, 0x808000, 0xFFFF00, 0x000080, 0x0000FF, 0x008080, 0x00FFFF};
       ITrace2D tmpTrace;
@@ -240,8 +247,26 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
       this.xIndex = arrayLocation(xVarName);
       this.xVarName = xVarName;
 
-      this.chartPane = new MultiTracing(tabbedPane, this.xVarName);
+      
+      // copy from Linkedlist to array 
+      yVarsSelected = new String[yVarNames.size()];
+      s2 = yVarNames.toString();
+      s2 = s2.replaceAll("\\[", "");
+      s2 = s2.replaceAll("]", "");
+      s2 = s2.replaceAll(" ", "");
+      yVarsSelected = s2.split(",");
 
+      // get the upper and lower bounds
+      lowerUpperBounds = getMaxMinRange(mod.getInputVariablesToStrings(), yVarsSelected);
+
+      if (lowerUpperBounds[0] == 0 && lowerUpperBounds[1] == 0) {  // no bounds
+        this.chartPane = new MultiTracing(tabbedPane, this.xVarName, graphSize, lowerUpperBounds[0], lowerUpperBounds[1]);
+      } else { // set the bounds
+        this.chartPane = new MultiTracing(tabbedPane, this.xVarName, graphSize, lowerUpperBounds[0] - 1, lowerUpperBounds[1] + 1);
+      }
+
+      
+      // Set the color for the different variables to plot
       for (int index = 0, n = this.yVarNames.size(); index < n; index++) {
         //define color for each trace
         if (index > 14) {
@@ -253,7 +278,7 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
         tmpTrace = new Trace2DSimple();
         this.traces.add(tmpTrace);
         this.traces.get(index).setColor(c);
-        tmpThread = new AddPaintRemoveThread(this.chartPane.m_chart, this.traces.get(index), 10, this.yVarNames.get(index));
+        tmpThread = new AddPaintRemoveThread(this.chartPane.m_chart, this.traces.get(index), 10, this.yVarNames.get(index), graphSize);
         this.yThreads.add(index, tmpThread);
         this.yThreads.get(index).start();
       }
@@ -272,7 +297,57 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
         genGraph.bFirstGraph = true;
       }
     }
-   
+    
+    /** getMaxMinRange will take 2 Strings. It removes the "-Best" and "-Curr"
+     * from the toCompare and then compares to the compareTo. It will locate the 
+     * minimum and maximum values set for these and return the minimum and maximum
+     * for the toCompare array.
+     * @param compareTo - variable to compare to. These are the input variable in the module file (.xts).
+     * @param toCompare - these are the variables selected for graphing.
+     * @return maxMin[2] - [0]- minimum value; [1]- maximum value
+     */
+    private Float[] getMaxMinRange(String[] compareTo, String[] toCompare) {
+      String toCompareNew;
+
+      // strip out spaces
+      for(int i=0; i<compareTo.length; i++) {
+            compareTo[i] = compareTo[i].replaceAll(" ", "");
+      }
+
+      Float[] fUpper = new Float[toCompare.length];
+      Float[] fLower = new Float[toCompare.length];
+      Float[] fReturn = new Float[2]; // where [0]=min value, [1]=max
+      int iUpLowIndex=0;
+      
+      // set arrays to positive infinity
+      Arrays.fill(fLower, Float.POSITIVE_INFINITY);
+      Arrays.fill(fUpper, Float.NEGATIVE_INFINITY);
+      
+      Arrays.sort(compareTo); // sort array so it can be used for binarySearch
+
+      for(int i=0; i<toCompare.length; i++) {
+        toCompareNew = toCompare[i].replaceAll("-Best", ""); // remove "-Curr" and "-Best" if present
+        toCompareNew = toCompareNew.replaceAll("-Curr", "");
+        int arrIndex;
+        if((arrIndex = Arrays.binarySearch(compareTo, toCompareNew)) >= 0) {
+          fLower[iUpLowIndex] = appFile.lowerBounds[arrIndex];
+          fUpper[iUpLowIndex] = appFile.upperBounds[arrIndex];
+          iUpLowIndex++;
+        }
+      }
+      if (iUpLowIndex != 0) { // set the upper/lower to max and min values
+        Arrays.sort(fLower);
+        Arrays.sort(fUpper);
+        fReturn[0] = fLower[0];
+        fReturn[1] = fUpper[fReturn.length-1];
+      } else { // set to 0
+        fReturn[0] = 0F;
+        fReturn[1] = 0F;
+      }
+      
+      return(fReturn);
+
+    }
 
    /** remove is used to decrement the number of graphs.
     * 
@@ -352,9 +427,25 @@ public XTOOLSECMonitor(OptimizationPanel op, boolean showFrame, int logInterval,
 
     //Concatenate all the fields into a single String
     sReturn = sReturn + sOutVarBest + "," + sInVarBest + "," + sOutVarCurr + "," + sInVarCurr;
-    //Add commas as separators
-  //  sReturn = sReturn.replace(" ", ",");
-    //Remove any square brackets (ie. [ or ])
+
+    // put all the input variables types (-Best and -Curr) in the same array, used in graphing util
+    sInVarBestCurr = new String[(inVarNamesBest.length+inVarNamesCurr.length)];
+    System.arraycopy(inVarNamesBest, 0, sInVarBestCurr, 0, inVarNamesBest.length);
+    System.arraycopy(inVarNamesCurr, 0, sInVarBestCurr, inVarNamesBest.length, inVarNamesCurr.length);
+
+    // put all the variables into a single array, used for graphing utility
+    genGraph.varName[0] = "Evaluation";
+    genGraph.varName[1] = "Elapsed Time(ms)";
+    int arrLength=2;
+    System.arraycopy(outVarNamesBest, 0, genGraph.varName, arrLength, outVarNamesBest.length);
+    arrLength += outVarNamesBest.length;
+    System.arraycopy(inVarNamesBest, 0, genGraph.varName, arrLength, inVarNamesBest.length);
+    arrLength += inVarNamesBest.length;
+    System.arraycopy(outVarNamesCurr, 0, genGraph.varName, arrLength, outVarNamesCurr.length);
+    arrLength += outVarNamesCurr.length;
+    System.arraycopy(inVarNamesCurr, 0, genGraph.varName, arrLength, inVarNamesCurr.length);
+
+
     sReturn = sReturn.replace("[", "");
     sReturn = sReturn.replace("]", "");
 
