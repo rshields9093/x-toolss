@@ -159,6 +159,7 @@
            }
             upperVals[i] = temp;	
          }
+         upperBounds = new float[genArray.length];
          upperBounds = upperVals;
       }
       
@@ -181,6 +182,7 @@
                }
             lowerVals[i] = temp;	
          }
+         lowerBounds = new float[genArray.length];
          lowerBounds = lowerVals;
        
       }
