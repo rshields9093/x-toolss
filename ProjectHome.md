@@ -1,0 +1,1 @@
+NASA X-TOOLSS (NXT or NASA's eXploration Toolset for Optimization Of Launch and Space Systems) is an optimization tool using genetic algorithms (GAs) provided by the GENEVOT (Genetic and Evolutionary Toolkit) library.  It allows the user to set parameters and run GECs (Genetic and Evolutionary Computations) to find solutions for complex problems.
