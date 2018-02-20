@@ -1,7 +1,7 @@
 /*
  * Copyright 2005 Mike Tinker, Gerry Dozier, Aaron Gerrett, Lauren Goff, 
  * Mike SanSoucie, and Patrick Hull
- * Copyright 2011 Joshua Adams
+ * Copyright 2011, 2018 Joshua Adams
  * 
  * This file is part of X-TOOLSS.
  *
